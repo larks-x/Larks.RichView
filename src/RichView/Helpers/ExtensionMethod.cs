@@ -50,20 +50,6 @@
         /// </summary>
         /// <param name="r"></param>
         /// <returns></returns>
-        public static PointF[] ToPointFArray(this RectangleF r)
-        {
-            List<PointF> list = new List<PointF>();
-            list.Add(new PointF(r.X,r.Y));
-            list.Add(new PointF(r.Right, r.Y));
-            list.Add(new PointF(r.X, r.Bottom));
-            return list.ToArray();
-        }
-
-        /// <summary>
-        /// RectangleF 转 PointF[]
-        /// </summary>
-        /// <param name="r"></param>
-        /// <returns></returns>
         public static Rectangle ToRectangle(this RectangleF r)
         {
 

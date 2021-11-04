@@ -6,6 +6,10 @@
     public class ViewInfo
     {
         /// <summary>
+        /// 页面大小改变
+        /// </summary>
+        public Action ChangePageSize;
+        /// <summary>
         /// 样式列表
         /// </summary>
         public List<StyleInfo> StyleInfos { get; set; } = new();
@@ -18,6 +22,10 @@
         /// </summary>
         public List<LineInfo> LineInfos { get; set; } = new();
         /// <summary>
+        /// 所有行
+        /// </summary>
+        public List<LineContainer> Lines { get; set; } = new();
+        /// <summary>
         /// 所有元素
         /// </summary>
         public List<ViewItem> ContextItems { get; set; } = new();
@@ -25,7 +33,16 @@
         /// View布局
         /// </summary>
         public LayoutInfo Layout { get; set; } = new();
-        
+
+        public ViewInfo()
+        {
+            Layout.LayoutChange += (p) =>
+            {
+                if(p == LayoutChangeProperty.PageSize)
+                    ChangePageSize?.Invoke();
+            };
+        }
+
         /// <summary>
         /// 克隆此实例
         /// </summary>
@@ -38,6 +55,7 @@
                 StyleInfos = this.StyleInfos.Clone(),
                 ParagraphInfos = this.ParagraphInfos.Clone(),
                 LineInfos = this.LineInfos.Clone(),
+                Lines = this.Lines.Clone(),
                 ContextItems = this.ContextItems.Clone(),
             };
             return obj;

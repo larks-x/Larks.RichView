@@ -175,21 +175,25 @@
     public enum ParagraphAlignment
     { 
         /// <summary>
+        /// 无段落样式
+        /// </summary>
+        None = 0,
+        /// <summary>
         /// 左对齐
         /// </summary>
-        Left = 0,
+        Left = 1,
         /// <summary>
         /// 右对齐
         /// </summary>
-        Right = 1,
+        Right = 2,
         /// <summary>
         /// 两端对齐(暂不实现)
         /// </summary>
-        Justified = 2,
+        Justified = 3,
         /// <summary>
         /// 分散对齐(暂不实现)
         /// </summary>
-        Distributed = 3,
+        Distributed = 4,
     }
 
     /// <summary>
@@ -233,5 +237,29 @@
         /// 右下
         /// </summary>
         BottomRight=8,
+    }
+
+    /// <summary>
+    /// Layout属性变化
+    /// </summary>
+    public enum LayoutChangeProperty
+    {
+        /// <summary>
+        /// Padding变化
+        /// </summary>
+        Padding = 0,
+        /// <summary>
+        /// RowSpacing变化
+        /// </summary>
+        RowSpacing = 1,
+        /// <summary>
+        /// TabToSpace变化
+        /// </summary>
+        TabToSpace = 2,
+        /// <summary>
+        /// PageSize变化
+        /// </summary>
+        PageSize = 3,
+
     }
 }

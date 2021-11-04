@@ -7,6 +7,7 @@ global using System.Threading;
 global using System.Diagnostics;
 global using System.Windows.Forms;
 global using System.ComponentModel;
+global using System.Threading.Tasks;
 global using System.Drawing.Imaging;
 global using System.Drawing.Drawing2D;
 global using System.Collections.Generic;
