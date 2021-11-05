@@ -1004,77 +1004,77 @@
         /// <param name="index">开始的索引</param>
         private void MeasureItems(int index = 0)
         {
-
-            try
-            {
-                if (index == -1)
-                {
-                    CallDrawContext();
-                    return;
-                }
-                if (ContextItems.Count == 0)
-                {
-                    CallDrawContext();
-                    return;
-                }
-                if (MiddleLayerGraphics == null)
-                    return;
-                lock (IsDraw)
-                {
+            throw new NotImplementedException();
+            //try
+            //{
+            //    if (index == -1)
+            //    {
+            //        CallDrawContext();
+            //        return;
+            //    }
+            //    if (ContextItems.Count == 0)
+            //    {
+            //        CallDrawContext();
+            //        return;
+            //    }
+            //    if (MiddleLayerGraphics == null)
+            //        return;
+            //    lock (IsDraw)
+            //    {
                    
-                    if (index > ContextItems.Count - 1)
-                        index = ContextItems.Count - 1;
-                    Stopwatch sw = new Stopwatch();//Stopwatch提供一组方法和属性，可用于准确地测量运行时间
+            //        if (index > ContextItems.Count - 1)
+            //            index = ContextItems.Count - 1;
+            //        Stopwatch sw = new Stopwatch();//Stopwatch提供一组方法和属性，可用于准确地测量运行时间
                    
-                    for (int i = index; i < ContextItems.Count; i++)
-                    {
-                        sw.Start();
-                        //使用新的测量方法
-                        ContextItems[i].Measure(MiddleLayerGraphics, ContextViewInfo);
-                        sw.Stop();
-                        TimeSpan dt = sw.Elapsed;//获取当前实例测量得出的总运行时间
-                        sw.Reset();
-                        Debug.WriteLine($"[{i}]程序耗时:'{ dt.TotalMilliseconds}'毫秒");
-                    }
+            //        for (int i = index; i < ContextItems.Count; i++)
+            //        {
+            //            sw.Start();
+            //            //使用新的测量方法
+            //            ContextItems[i].Measure(MiddleLayerGraphics, ContextViewInfo);
+            //            sw.Stop();
+            //            TimeSpan dt = sw.Elapsed;//获取当前实例测量得出的总运行时间
+            //            sw.Reset();
+            //            Debug.WriteLine($"[{i}]程序耗时:'{ dt.TotalMilliseconds}'毫秒");
+            //        }
                     
-                    List<int> DelLineIndexs = new List<int>();
-                    foreach (var l in LineInfos)
-                    {
-                        float maxHeiht = 0;
-                        var lineitems = ContextItems.Where(o => o.LineNo == l.Number);
-                        if (lineitems != null && lineitems.Count() > 0)
-                            maxHeiht = lineitems.Max(o => o.DrawSize.Height);
-                        else
-                            maxHeiht = TextItem.Enter.DrawSize.Height;
-                        l.Height = Convert.ToInt32(Math.Ceiling(maxHeiht));
-                        if (l.Number != 0)
-                        {
-                            l.MeasureTop(ContextViewInfo);
-                        }
-                        var lineItems = ContextItems.Where(o => o.LineNo == l.Number).ToList();
-                        if (lineItems != null && lineItems.Count > 0)
-                        {
-                            foreach (var item in lineitems)
-                                item.LineHeightChange(l);
-                        }
-                        else
-                            DelLineIndexs.Add(LineInfos.IndexOf(l));
-                    }
-                    //if (DelLineIndexs.Count > 0)
-                    //{
-                    //    DelLineIndexs.Reverse();
-                    //    foreach (var i in DelLineIndexs)
-                    //        LineInfos.RemoveAt(i);
-                    //}
-                }
+            //        List<int> DelLineIndexs = new List<int>();
+            //        foreach (var l in LineInfos)
+            //        {
+            //            float maxHeiht = 0;
+            //            var lineitems = ContextItems.Where(o => o.LineNo == l.Number);
+            //            if (lineitems != null && lineitems.Count() > 0)
+            //                maxHeiht = lineitems.Max(o => o.DrawSize.Height);
+            //            else
+            //                maxHeiht = TextItem.Enter.DrawSize.Height;
+            //            l.Height = Convert.ToInt32(Math.Ceiling(maxHeiht));
+            //            if (l.Number != 0)
+            //            {
+            //                l.MeasureTop(ContextViewInfo);
+            //            }
+            //            var lineItems = ContextItems.Where(o => o.LineNo == l.Number).ToList();
+            //            if (lineItems != null && lineItems.Count > 0)
+            //            {
+            //                foreach (var item in lineitems)
+            //                    item.LineHeightChange(l);
+            //            }
+            //            else
+            //                DelLineIndexs.Add(LineInfos.IndexOf(l));
+            //        }
+            //        //if (DelLineIndexs.Count > 0)
+            //        //{
+            //        //    DelLineIndexs.Reverse();
+            //        //    foreach (var i in DelLineIndexs)
+            //        //        LineInfos.RemoveAt(i);
+            //        //}
+            //    }
                 
-                CallDrawContext();
+            //    CallDrawContext();
 
-            }
-            catch (Exception e)
-            {
-                 throw e;
-            }
+            //}
+            //catch (Exception e)
+            //{
+            //     throw e;
+            //}
         }
 
         /// <summary>
