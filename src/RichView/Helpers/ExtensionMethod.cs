@@ -66,5 +66,6 @@
         {
             return listToClone.Select(item => (T)item.Clone()).ToList();
         }
+
     }
 }

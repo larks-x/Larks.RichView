@@ -19,7 +19,7 @@ global using RichView.Helpers;
 global using RichView.Interface;
 global using RichView.Components;
 global using RichView.ElementObject;
-
+global using RichView.ContentElements;
 
 #if NET5_0 || NET6_0
 global using System.Text.Json;

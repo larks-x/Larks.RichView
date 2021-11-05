@@ -50,9 +50,7 @@
         /// </summary>
         private List<StyleInfo> StyleInfos
         {
-            get {
-                return ContextViewInfo.StyleInfos;
-            }
+            get => ContextViewInfo.StyleInfos;
             set {
                 if (ContextViewInfo.StyleInfos.Equals(value))
                     return;
@@ -64,9 +62,7 @@
         /// </summary>
         private List<ParagraphInfo> ParagraphInfos
         {
-            get {
-                return ContextViewInfo.ParagraphInfos;
-            }
+            get => ContextViewInfo.ParagraphInfos;
             set {
                 if (ContextViewInfo.ParagraphInfos.Equals(value))
                     return;
@@ -78,31 +74,20 @@
         /// </summary>
         private List<LineInfo> LineInfos
         {
-            get {
-                return ContextViewInfo.LineInfos;
-            }
+            get => ContextViewInfo.LineInfos;
             set {
                 if (ContextViewInfo.LineInfos.Equals(value))
                     return;
                 ContextViewInfo.LineInfos = value;
             }
         }
-        /// <summary>
-        /// 所有元素
-        /// </summary>
-        private List<ViewItem> ContextItems
+        
+        private List<ContentItem> ContextItems
         {
-            get
-            {
-                return ContextViewInfo.ContextItems;
-            }
-            set
-            {
-                if (ContextViewInfo.ContextItems.Equals(value))
-                    return;
-                ContextViewInfo.ContextItems = value;
-            }
+            get => ContextViewInfo.ContextItems;
+            
         }
+
         /// <summary>
         /// 绘制锁
         /// </summary>
@@ -192,7 +177,7 @@
         /// 根据当前光标获取元素
         /// </summary>
         /// <returns></returns>
-        private ViewItem GetCurItem(long? index = null)
+        private ContentItem GetCurItem(long? index = null)
         {
             if (index == null)
                 index = CursorIndex;
@@ -207,7 +192,7 @@
         /// <param name="item">Item</param>
         /// <param name="area">鼠标在Item的哪个区域</param>
         /// <returns></returns>
-        private long ItemToCursor(ViewItem item, MouseInItem area)
+        private long ItemToCursor(ContentItem item, MouseInItem area)
         {
             if (area == MouseInItem.After)
                 return ContextItems.IndexOf(item) + 1;
@@ -644,18 +629,18 @@
             LineInfos[0].MeasureWidth(ContextViewInfo);
 
 
-            PictureEditor.ChangeSize +=(option) =>
-            {
-                var oldView = ContextViewInfo.Clone();
-                var oldCursorIndex = CursorIndex;
-                ContextItems[option.ItemNo].DrawSize = option.NewSize;
-                MeasureItems(option.ItemNo);
-                var newRect = ContextItems[option.ItemNo].DrawRectangle;
-                option.ItemRectangle = newRect;
-                var newView = ContextViewInfo.Clone();
-                ViewCommand cmd = new ViewCommand(this, oldView, newView, oldCursorIndex, CursorIndex);
-                AddUndo(cmd);
-            };
+            //PictureEditor.ChangeSize +=(option) =>
+            //{
+            //    var oldView = ContextViewInfo.Clone();
+            //    var oldCursorIndex = CursorIndex;
+            //    ContextItems[option.ItemNo].DrawSize = option.NewSize;
+            //    MeasureItems(option.ItemNo);
+            //    var newRect = ContextItems[option.ItemNo].DrawRectangle;
+            //    option.ItemRectangle = newRect;
+            //    var newView = ContextViewInfo.Clone();
+            //    ViewCommand cmd = new ViewCommand(this, oldView, newView, oldCursorIndex, CursorIndex);
+            //    AddUndo(cmd);
+            //};
             this.SizeChanged += (s, e) =>
             {
                 ContextViewInfo.Layout.PageSize = this.Size;
@@ -1104,16 +1089,16 @@
             var oldView = ContextViewInfo.Clone();
             var oldCursorIndex = CursorIndex;
 
-            List<ViewItem> newItem = new List<ViewItem>();
+            List<ContentItem> newItem = new List<ContentItem>();
             if (key == ControlKey.None)
             {
                 var l = text.ToCharArray();
                 foreach (var s in l)
                 {
                     if (s.ToString() == " ")
-                        newItem.Add(TextItem.Space);
+                        newItem.Add(TextContent.Space);
                     else
-                        newItem.Add(new TextItem(s.ToString(), 0));
+                        newItem.Add(new TextContent(s.ToString(), 0));
                 }
             }
             else
@@ -1121,10 +1106,10 @@
                 switch (key)
                 {
                     case ControlKey.Enter:
-                        newItem.Add(TextItem.Enter);
+                        newItem.Add(TextContent.Enter);
                         break;
                     case ControlKey.Tab:
-                        newItem.Add(TextItem.Tab);
+                        newItem.Add(TextContent.Tab);
                         break;
                     default:
                         return;
@@ -1448,7 +1433,7 @@
                         return;
                     long oldIndex = CursorIndex;
 
-                    ViewItem item;
+                    ContentItem item;
                     if (CursorIndex > 0)
                         item = ContextItems[(int)CursorIndex - 1];
                     else
@@ -1486,7 +1471,7 @@
                         return;
                     long oldIndex = CursorIndex;
 
-                    ViewItem item;
+                    ContentItem item;
                     if (CursorIndex > 0)
                         item = ContextItems[(int)CursorIndex - 1];
                     else
@@ -1633,7 +1618,7 @@
         /// 当前选中的Iten
         /// </summary>
         /// <returns></returns>
-        private List<ViewItem> SelectedItem()
+        private List<ContentItem> SelectedItem()
         {
             if (ContextItems.Count == 0)
                 return null;
@@ -1708,7 +1693,7 @@
         /// <summary>
         /// 绘制背景层
         /// </summary>
-        private void DrawBackgroundLayer(Graphics backgroundLayerGraphics,Brush selectPen, List<ViewItem> copylist)
+        private void DrawBackgroundLayer(Graphics backgroundLayerGraphics,Brush selectPen, List<ContentItem> copylist)
         {
             try
             {
@@ -1781,16 +1766,20 @@
 
                     lock (IsDraw)
                     {
-                        var DrawEnterSize = MiddleLayerGraphics.MeasureString("↵", GetStyleInfo(0).StyleFont, 800, StringFormat.GenericTypographic);
-                        List<ViewItem> copylist = ContextItems.ToList();
-                        MiddleLayerGraphics.Clear(Color.White);
-                        DrawBackgroundLayer(MiddleLayerGraphics, selectBrush, copylist);
+                        List<LineContainer> copylist = ContextViewInfo.Lines.Clone();
+                        copylist.ForEach((line) => {
+                            line.Draw(MiddleLayerGraphics);
+                        });
+                        //var DrawEnterSize = MiddleLayerGraphics.MeasureString("↵", GetStyleInfo(0).StyleFont, 800, StringFormat.GenericTypographic);
+                        //List<ViewItem> copylist = ContextItems.ToList();
+                        //MiddleLayerGraphics.Clear(Color.White);
+                        //DrawBackgroundLayer(MiddleLayerGraphics, selectBrush, copylist);
 
-                        foreach (var s in copylist)
-                        {
-                            s.Draw(MiddleLayerGraphics,ContextViewInfo);
-                        }
-                        CalculateCursorPoint();
+                        //foreach (var s in copylist)
+                        //{
+                        //    s.Draw(MiddleLayerGraphics,ContextViewInfo);
+                        //}
+                        //CalculateCursorPoint();
                     }
                     
                 }

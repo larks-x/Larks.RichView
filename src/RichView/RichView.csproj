@@ -30,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="ElementObject\ImageItem.cs" />
+    <Compile Remove="ElementObject\TextItem.cs" />
+    <Compile Remove="ElementObject\ViewItem.cs" />
     <Compile Remove="ImageDesign.cs" />
     <Compile Remove="ImageDesign.Designer.cs" />
   </ItemGroup>

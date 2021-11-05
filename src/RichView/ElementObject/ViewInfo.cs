@@ -28,7 +28,7 @@
         /// <summary>
         /// 所有元素
         /// </summary>
-        public List<ViewItem> ContextItems { get; set; } = new();
+        public List<ContentItem> ContextItems { get; set; } = new();
         /// <summary>
         /// View布局
         /// </summary>

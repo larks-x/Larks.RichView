@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace RichView.ElementObject
+namespace RichView.ContentElements
 {
     /// <summary>
     /// 元素唯一键

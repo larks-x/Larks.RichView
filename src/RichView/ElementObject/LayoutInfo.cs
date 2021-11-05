@@ -90,6 +90,11 @@ namespace RichView.ElementObject
         }
 
         /// <summary>
+        /// 客户区域大小
+        /// </summary>
+        public SizeF ClientSize => new SizeF(PageSize.Width - (Padding.Left + Padding.Right),PageSize.Height - (Padding.Top + Padding.Bottom));
+
+        /// <summary>
         /// 克隆
         /// </summary>
         /// <returns></returns>
