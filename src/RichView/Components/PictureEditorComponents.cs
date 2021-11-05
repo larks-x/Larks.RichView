@@ -94,32 +94,33 @@
         /// <param name="item"></param>
         public void Bind(HoverItem item)
         {
+            throw new NotImplementedException();
             if (item.InItem.ItemType != ItemType.Image)
                 return;
             if (BindItemNo == item.ItemNo)
                 return;
             if (BindItemNo != -1)
                 UnBind();
-            ImageItem imgItem = (ImageItem)item.InItem;
-            LastMousePoint = Point.Empty;
-            BindItemNo = item.ItemNo;
-            if (imgItem.Image != null)
-                BindImage = (Image)imgItem.Image.Clone();
-            EditorRectangle = item.ItemRectangle;
-            //不使用渐变笔刷
-            //AnchorPointBrush = new LinearGradientBrush(new PointF(0, Size.Width / 2), new PointF(Size.Height, Size.Width / 2), Color.Red, Color.White);
-            #region 锚点位置
-            AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.TopLeft, EditorRectangle, AnchorPointRadius));
-            AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.TopCenter, EditorRectangle, AnchorPointRadius));
-            AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.TopRight, EditorRectangle, AnchorPointRadius));
-            AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.Left, EditorRectangle, AnchorPointRadius));
-            AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.Right, EditorRectangle, AnchorPointRadius));
-            AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.BottomLeft, EditorRectangle, AnchorPointRadius));
-            AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.BottomCenter, EditorRectangle, AnchorPointRadius));
-            AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.BottomRight, EditorRectangle, AnchorPointRadius));
+            //ImageItem imgItem = (ImageItem)item.InItem;
+            //LastMousePoint = Point.Empty;
+            //BindItemNo = item.ItemNo;
+            //if (imgItem.Image != null)
+            //    BindImage = (Image)imgItem.Image.Clone();
+            //EditorRectangle = item.ItemRectangle;
+            ////不使用渐变笔刷
+            ////AnchorPointBrush = new LinearGradientBrush(new PointF(0, Size.Width / 2), new PointF(Size.Height, Size.Width / 2), Color.Red, Color.White);
+            //#region 锚点位置
+            //AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.TopLeft, EditorRectangle, AnchorPointRadius));
+            //AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.TopCenter, EditorRectangle, AnchorPointRadius));
+            //AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.TopRight, EditorRectangle, AnchorPointRadius));
+            //AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.Left, EditorRectangle, AnchorPointRadius));
+            //AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.Right, EditorRectangle, AnchorPointRadius));
+            //AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.BottomLeft, EditorRectangle, AnchorPointRadius));
+            //AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.BottomCenter, EditorRectangle, AnchorPointRadius));
+            //AnchorPointRectangle.Add(new AnchorPoint(AnchorPointType.BottomRight, EditorRectangle, AnchorPointRadius));
 
-            #endregion
-            IsBind = true;
+            //#endregion
+            //IsBind = true;
         }
 
         /// <summary>

@@ -212,8 +212,9 @@
         /// <param name="img"></param>
         public void InsertImage(Image img)
         {
-            ContextItems.Insert((int)CursorIndex, new ImageItem(img));
-            MeasureItems(0);
+            throw new NotImplementedException();
+            //ContextItems.Insert((int)CursorIndex, new ImageItem(img));
+            //MeasureItems(0);
         }
 
         /// <summary>

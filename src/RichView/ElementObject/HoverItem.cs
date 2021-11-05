@@ -12,7 +12,7 @@
         /// <summary>
         /// 鼠标悬停所在的Item
         /// </summary>
-        public ViewItem InItem { get; set; }
+        public ContentItem InItem { get; set; }
         /// <summary>
         /// 元素的绘制位置
         /// </summary>
