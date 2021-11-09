@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--<TargetFrameworks>net35;net40;net45;net451;net452;net46;net461;net462;net47;net471;net472;net48;net5.0-windows;net6.0-windows</TargetFrameworks>-->
+    <TargetFrameworks>net48;net5.0-windows;net6.0-windows</TargetFrameworks>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+    <Version>1.0.1</Version>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Company>Larks X</Company>
+    <Description>RichView,WinForm富文本控件</Description>
+    <Authors>Larks X</Authors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))=='false'">
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework)=='net35' or $(TargetFramework)=='net40'">
+    <PackageReference Include="AsyncBridge" Version="0.3.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework)=='net35' or $(TargetFramework)=='net40'or $(TargetFramework)=='net45'or $(TargetFramework)=='net451'or $(TargetFramework)=='net452'or $(TargetFramework)=='net46'or $(TargetFramework)=='net461'or $(TargetFramework)=='net462'">
+    <PackageReference Include="Portable.System.ValueTuple" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ContentElements\Command.cs" />
+  </ItemGroup>
+  
+</Project>
