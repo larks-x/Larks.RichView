@@ -26,6 +26,43 @@ namespace Larks.RichView.ContentElements
         /// </summary>
         public ContainerList<IContentItem> ContentItems = new();
 
+        /// <summary>
+        /// 插入元素
+        /// </summary>
+        /// <param name="index">插入位置的索引</param>
+        /// <param name="item">内容元素</param>
+        public void InsertItem(int index, IContentItem item)
+        {
+            ContentItems.Insert(index,item);
+        }
+
+        /// <summary>
+        /// 插入元素
+        /// </summary>
+        /// <param name="index">插入位置的索引</param>
+        /// <param name="items">内容元素集合</param>
+        public void InsertRangeItem(int index, IEnumerable<IContentItem> items)
+        {
+            ContentItems.InsertRange(index, items);
+        }
+
+        /// <summary>
+        /// 追加元素
+        /// </summary>
+        /// <param name="item">内容元素</param>
+        public void AddItem(IContentItem item)
+        {
+            ContentItems.Add(item);
+        }
+
+        /// <summary>
+        /// 追加元素
+        /// </summary>
+        /// <param name="items">内容元素集合</param>
+        public void AddRangeItem(IEnumerable<IContentItem> items)
+        {
+            ContentItems.AddRange(items);
+        }
 
         /// <summary>
         /// 释放

@@ -3,6 +3,10 @@
     public interface IContentItem : ICloneable, IDisposable
     {
         /// <summary>
+        /// RichViewInfo引用
+        /// </summary>
+        RichViewInformation RichViewInfo { get; }
+        /// <summary>
         /// 元素编号
         /// </summary>
         int No { get; }

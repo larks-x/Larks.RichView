@@ -3,7 +3,7 @@
     /// <summary>
     /// 输入法组件
     /// </summary>
-    internal class ImeComponent
+    public class ImeComponent
     {
         #region Event
         /// <summary>
