@@ -3,6 +3,10 @@
     public interface IContentItem : ICloneable, IDisposable
     {
         /// <summary>
+        /// 元素编号
+        /// </summary>
+        int No { get; }
+        /// <summary>
         /// 唯一键
         /// </summary>
         long UniqueKey { get; }
@@ -18,10 +22,10 @@
         /// 文本风格
         /// </summary>
         int StyleNo { get; set; }
-        /// <summary>
-        /// 所在行
-        /// </summary>
-        LineContainer Line { get; set; }
+        ///// <summary>
+        ///// 所在行
+        ///// </summary>
+        //LineContainer Line { get; set; }
         /// <summary>
         /// 是否为选中状态
         /// </summary>
@@ -54,9 +58,8 @@
         /// <summary>
         /// 测量元素并返回元素的绘制区域
         /// </summary>
-        /// <param name="graphics">画布</param>
         /// <returns></returns>
-        RectangleF Measure(Graphics graphics, List<StyleInfo> styles, LayoutInfo layout);
+        RectangleF Measure();
         /// <summary>
         /// 指定点在元素的哪个区域
         /// </summary>
@@ -67,8 +70,7 @@
         /// <summary>
         /// 绘制元素
         /// </summary>
-        /// <param name="graphics">画布</param>
-        void Draw(Graphics graphics, List<StyleInfo> styles);
+        void Draw();
 
     }
 }

@@ -9,22 +9,78 @@ using System.Windows.Forms;
 
 namespace Larks.RichView
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class RichView :UserControl
     {
-        DrawingManaged DM;
+        /// <summary>
+        /// 按下一个键
+        /// </summary>
+        const int WM_KEYDOWN = 0x0100;
+        /// <summary>
+        /// Tab
+        /// </summary>
+        const int VK_TAB = 9;
+        /// <summary>
+        /// Left Arrow
+        /// </summary>
+        const int VK_LEFT = 37;
+        /// <summary>
+        /// Up Arrow
+        /// </summary>
+        const int VK_UP = 38;
+        /// <summary>
+        /// Right Arrow
+        /// </summary>
+        const int VK_RIGHT = 39;
+        /// <summary>
+        /// Down Arrow
+        /// </summary>
+        const int VK_DOWN = 40;
+
+        RichViewHost host;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public RichView()
         {
             InitializeComponent();
-            DM=new DrawingManaged(this);
+            host = new RichViewHost(this);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="m"></param>
         protected override void WndProc(ref Message m)
         {
-            DM?.WndProc(ref m);
+            host?.WndProc(ref m);
             base.WndProc(ref m);
         }
-        public void AddLine()
+        /// <summary>
+        /// 处理按下方向键和Tab键焦点转移的问题
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="keyData"></param>
+        /// <returns></returns>
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            DM.ContextViewInfo.AddLine();
+            if (this.Focused && msg.Msg == WM_KEYDOWN)
+            {
+                switch ((int)msg.WParam)
+                {
+                    case VK_TAB:
+                    case VK_LEFT:
+                    case VK_UP:
+                    case VK_RIGHT:
+                    case VK_DOWN:
+                        return true;
+                }
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
+
+
     }
 }

@@ -33,7 +33,7 @@
         private const int CFS_CANDIDATEPOS = 0x0040;
         private const int CFS_EXCLUDE = 0x0080;
         private bool IsRichView = false;
-        CursorPointInfo CursorInfo = CursorPointInfo.Empty;
+        //CursorPointInfo CursorInfo = CursorPointInfo.Empty;
         #endregion
 
         #region Construction
@@ -45,12 +45,13 @@
         {
             var handle = control.Handle;
             hIMC = ImmGetContext(handle);
-            if (control is DrawingManaged)
+            if (control is RichView)
             {
                 IsRichView = true;
                 //((DrawingManaged)control).CursorPointChange += (c) =>
                 //{
                 //    CursorInfo = c;
+                //    //输入法位置
                 //    if (IsRichView && CursorInfo != CursorPointInfo.Empty)
                 //    {
                 //        COMPOSITIONFORM cf = new();
@@ -94,18 +95,19 @@
             }
             else if (m.Msg == WM_IME_COMPOSITION)
             {
-                if (IsRichView && CursorInfo != CursorPointInfo.Empty)
-                {
-                    COMPOSITIONFORM cf = new();
-                    cf.dwStyle = CFS_POINT;
-                    cf.ptCurrentPos.X = (int)CursorInfo.Left;
-                    cf.ptCurrentPos.Y = (int)CursorInfo.Top;
-                    cf.rcArea.Bottom = 10;
-                    cf.rcArea.Top = 10;
-                    cf.rcArea.Left = 10;
-                    cf.rcArea.Right = 10;
-                    ImmSetCompositionWindow(hIMC, ref cf);
-                }
+                //输入法位置
+                //if (IsRichView && CursorInfo != CursorPointInfo.Empty)
+                //{
+                //    COMPOSITIONFORM cf = new();
+                //    cf.dwStyle = CFS_POINT;
+                //    cf.ptCurrentPos.X = (int)CursorInfo.Left;
+                //    cf.ptCurrentPos.Y = (int)CursorInfo.Top;
+                //    cf.rcArea.Bottom = 10;
+                //    cf.rcArea.Top = 10;
+                //    cf.rcArea.Left = 10;
+                //    cf.rcArea.Right = 10;
+                //    ImmSetCompositionWindow(hIMC, ref cf);
+                //}
                 var res = m.WParam.ToInt32();
                 string text = CurrentCompStr(this.handle);
                 if (!string.IsNullOrEmpty(text))
@@ -115,18 +117,19 @@
             }
             else if (m.Msg == WM_CHAR)
             {
-                if (IsRichView && CursorInfo != CursorPointInfo.Empty)
-                {
-                    COMPOSITIONFORM cf = new();
-                    cf.dwStyle = CFS_POINT;
-                    cf.ptCurrentPos.X = (int)CursorInfo.Left;
-                    cf.ptCurrentPos.Y = (int)CursorInfo.Top;
-                    cf.rcArea.Bottom = 10;
-                    cf.rcArea.Top = 10;
-                    cf.rcArea.Left = 10;
-                    cf.rcArea.Right = 10;
-                    ImmSetCompositionWindow(hIMC, ref cf);
-                }
+                //输入法位置
+                //if (IsRichView && CursorInfo != CursorPointInfo.Empty)
+                //{
+                //    COMPOSITIONFORM cf = new();
+                //    cf.dwStyle = CFS_POINT;
+                //    cf.ptCurrentPos.X = (int)CursorInfo.Left;
+                //    cf.ptCurrentPos.Y = (int)CursorInfo.Top;
+                //    cf.rcArea.Bottom = 10;
+                //    cf.rcArea.Top = 10;
+                //    cf.rcArea.Left = 10;
+                //    cf.rcArea.Right = 10;
+                //    ImmSetCompositionWindow(hIMC, ref cf);
+                //}
                 char inputchar = (char)m.WParam;
                 if (inputchar > 31 && inputchar < 127)
                 {

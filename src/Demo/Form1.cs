@@ -11,7 +11,7 @@ namespace Demo
 
         private void button1_Click(object sender, System.EventArgs e)
         {
-            richView1.AddLine();
+            //richView1.AddLine();
         }
 
         private void button2_Click(object sender, System.EventArgs e)

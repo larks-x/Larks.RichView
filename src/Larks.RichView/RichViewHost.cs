@@ -2,104 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Larks.RichView
 {
-    public class DrawingManaged: UserControl
+    /// <summary>
+    /// RichView主机
+    /// </summary>
+    public class RichViewHost
     {
-        #region Paivate
-
-        /// <summary>
-        /// 内容信息
-        /// </summary>
-        internal ViewInfo ContextViewInfo;
-       
-        /// <summary>
-        /// Style列表
-        /// </summary>
-        private List<StyleInfo> StyleInfos
-        {
-            get => ContextViewInfo.StyleInfos;
-            set
-            {
-                if (ContextViewInfo.StyleInfos.Equals(value))
-                    return;
-                ContextViewInfo.StyleInfos = value;
-            }
-        }
-        
-        /// <summary>
-        /// 行信息
-        /// </summary>
-        private List<LineContainer> Lines
-        {
-            get => ContextViewInfo.Lines;
-            set
-            {
-                if (ContextViewInfo.Lines.Equals(value))
-                    return;
-                ContextViewInfo.Lines = value;
-            }
-        }
-
-        private List<ContentItem> ContextItems
-        {
-            get => ContextViewInfo.ContextItems;
-
-        }
-
-      
-
-        /// <summary>
-        /// 获得焦点后第一次按键，用于处理Tab键的逻辑
-        /// </summary>
-        private bool KeyPressForAfterFocus = false;
-        /// <summary>
-        /// IME输入处理程序
-        /// </summary>
-        private ImeComponent IME;
-
-    
-
-        /// <summary>
-        /// Shift键是否按下
-        /// </summary>
-        private bool IsShiftDown = false;
-        /// <summary>
-        /// 是否完成了初始化
-        /// </summary>
-        private bool IsInitialization = false;
-        /// <summary>
-        /// 是否获得了焦点
-        /// </summary>
-        private bool IsFocus = false;
-
-
-     
-        private long _CursorIndex = 0;
-        /// <summary>
-        /// 光标位置
-        /// </summary>
-        protected long CursorIndex
-        {
-            get => _CursorIndex;
-            set
-            {
-                if (_CursorIndex == value)
-                    return;
-                if (value < -1)
-                    _CursorIndex = -1;
-                else if (value > ContextItems.Count)
-                    _CursorIndex = ContextItems.Count;
-                else
-                    _CursorIndex = value;
-            }
-        }
-
-       
-
-        #endregion
-
         #region WinAPI
         /// <summary>
         /// 获取按键状态
@@ -119,16 +30,6 @@ namespace Larks.RichView
         /// <returns></returns>
         [DllImport("User32.dll", EntryPoint = "SendMessage")]
         private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="process"></param>
-        /// <param name="minSize"></param>
-        /// <param name="maxSize"></param>
-        /// <returns></returns>
-        [DllImport("kernel32.dll")]
-        private static extern int SetProcessWorkingSetSize(IntPtr process, int minSize, int maxSize);
 
         #region WM
         //https://www.cnblogs.com/gaara-zhang/p/10706224.html
@@ -416,85 +317,175 @@ namespace Larks.RichView
 
         #endregion
 
-        public DrawingManaged(UserControl control)
-        {
-            //DoubleBuffer双缓冲，AllPaintingInWmPaint禁止擦除背景
-            this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.OptimizedDoubleBuffer
-            | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw
-            | ControlStyles.SupportsTransparentBackColor
-            , true);
-            this.UpdateStyles();
-            ChangeGrapicsSize(this.Width, this.Height);
-            
-            ContextViewInfo = new ViewInfo(this);
-            ContextViewInfo.Graphics = control.CreateGraphics();
-            control.SizeChanged += (s, e) =>
-            {
-                ContextViewInfo.Graphics?.Dispose();
-                this.Size = control.Size;
-                ContextViewInfo.Graphics = control.CreateGraphics();
-                //ContextViewInfo.InvokeOnChangePageSize(control.Size);
-                ContextViewInfo.Layout.PageSize = control.Size;
-            };
-            StyleInfos.Add(StyleInfo.Default);
-            Lines.Add(new LineContainer(ContextViewInfo));
-            
-            Lines[0].Measure(false);
+        /// <summary>
+        /// host绑定的handle
+        /// </summary>
+        public IntPtr Handle { get; private set; }
+        /// <summary>
+        /// 获得焦点后第一次按键，用于处理Tab键的逻辑
+        /// </summary>
+        private bool KeyPressForAfterFocus = false;
+        /// <summary>
+        /// Shift键是否按下
+        /// </summary>
+        private bool IsShiftDown = false;
+        /// <summary>
+        /// 是否完成了初始化
+        /// </summary>
+        private bool IsInitialization = false;
+        /// <summary>
+        /// 是否获得了焦点
+        /// </summary>
+        private bool IsFocus = false;
+        /// <summary>
+        /// IME组件
+        /// </summary>
+        private ImeComponent IME;
 
-            IME = new ImeComponent(control);
+        /// <summary>
+        /// 创建RichViewHost
+        /// </summary>
+        /// <param name="userControl">主机挂在的自定义控件</param>
+        public RichViewHost(UserControl userControl)
+        {
+            Handle = userControl.Handle;
+            ////DoubleBuffer双缓冲，AllPaintingInWmPaint禁止擦除背景
+            //userControl.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.OptimizedDoubleBuffer
+            //| ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw
+            //| ControlStyles.SupportsTransparentBackColor
+            //, true);
+            //userControl.UpdateStyles();
+            IME = new ImeComponent(userControl);
             IME.InputText += (s) =>
             {
                 ProcessingIMEInput(s);
             };
-
-
             IsInitialization = true;
         }
 
-
         /// <summary>
-        /// 强制GC
+        /// 处理IME输入字符串
         /// </summary>
-        protected void CallGC()
+        /// <param name="text">热输入的字符串</param>
+        /// <param name="key">控制符</param>
+        private void ProcessingIMEInput(string text, ControlKey key = ControlKey.None)
         {
-            try
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-                {
-                    SetProcessWorkingSetSize(Process.GetCurrentProcess().Handle, -1, -1);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            Debug.WriteLine($"控制键:{key.ToString()};输入:{text}");
+            //List<ItemInfo> newItem = new List<ItemInfo>();
+            //if (key == ControlKey.None)
+            //{
+            //    var l = text.ToCharArray();
+            //    foreach (var s in l)
+            //    {
+            //        if (s.ToString() == " ")
+            //            newItem.Add(ItemInfo.Space);
+            //        else
+            //            newItem.Add(new ItemInfo(s.ToString(), 0));
+            //    }
+            //}
+            //else
+            //{
+            //    switch (key)
+            //    {
+            //        case ControlKey.Enter:
+            //            //newItem.Add(ItemInfo.Enter);
+            //            break;
+            //        case ControlKey.Tab:
+            //            //newItem.Add(ItemInfo.Tab);
+            //            break;
+            //        default:
+            //            return;
+            //    }
+
+            //}
+            
         }
 
         /// <summary>
-        /// 是否在IDE设计模式
+        /// 
         /// </summary>
-        /// <returns></returns>
-        protected bool IsDesignMode()
+        /// <param name="m"></param>
+        public void WndProc(ref Message m)
         {
-            bool returnFlag = false;
-
-#if DEBUG
-            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+            float mouseX = 0;
+            float mouseY = 0;
+            int width = 0;
+            int height = 0;
+            switch (m.Msg)
             {
-                returnFlag = true;
-            }
-            else if (Process.GetCurrentProcess().ProcessName == "devenv")
-            {
-                returnFlag = true;
-            }
-#endif
+                case WM_CUT:
+                    Debug.WriteLine("WM_CUT");
+                    break;
+                case WM_COPY:
+                    Debug.WriteLine("WM_COPY");
+                   
+                    break;
+                case WM_PASTE:
+                    Debug.WriteLine("WM_PASTE");
+                    IDataObject iData = Clipboard.GetDataObject();
+                    if (iData.GetDataPresent(DataFormats.Text))
+                    {
+                        //如果剪贴板中的数据是文本格式 
+                        var psateStr = (string)iData.GetData(DataFormats.Text);//检索与指定格式相关联的数据 
+                        ProcessingIMEInput(psateStr, ControlKey.None);
+                    }
+                    break;
+                case WM_CLEAR:
+                    Debug.WriteLine("WM_CLEAR");
+                    break;
+                case WM_UNDO:
+                    Debug.WriteLine("WM_UNDO");
+                    Clipboard.Clear();
+                    break;
+                case WM_SETFOCUS:
+                    Debug.WriteLine("获得焦点");
+                    IsFocus = true;
+                    KeyPressForAfterFocus = true;
+                    break;
+                case WM_KILLFOCUS:
+                    Debug.WriteLine("失去焦点");
+                    IsFocus = false;
+                    break;
+                case WM_KEYUP:
+                    ProcessingKeyUp((int)m.WParam);
+                    KeyPressForAfterFocus = false;
+                    break;
+                case WM_KEYDOWN:
+                    ProcessingKeyDown((int)m.WParam);
+                    break;
+                case WM_SIZE:
+                    width = LOWORD(m.LParam);
+                    height = HIWORD(m.LParam);
+                    break;
+                case WM_LBUTTONDOWN:
+                    mouseX = LOWORD(m.LParam);
+                    mouseY = HIWORD(m.LParam);
+                   
 
-            return returnFlag;
+                    break;
+                case WM_MOUSEMOVE:
+                    mouseX = LOWORD(m.LParam);
+                    mouseY = HIWORD(m.LParam);
+                   
+                    break;
+                case WM_LBUTTONUP:
+                    mouseX = LOWORD(m.LParam);
+                    mouseY = HIWORD(m.LParam);
+                   
+                    break;
+                case WM_LBUTTONDBLCLK:
+                    //一般的情况下，如果没有指定CS_DBLCLKS，在窗口的消息循环里将不会得到WM_LBUTTONDBLCLK消息。
+                    //如果是API创建的窗体需要在风格中设置CS_DBLCLKS
+                    Debug.WriteLine($"{DateTime.Now}=>WM_LBUTTONDBLCLK");
+
+                    break;
+            }
+            if (IsInitialization)
+            {
+                IME.ImmOperation(m); //输入法
+            }
         }
 
-        #region ProcessingKey
         /// <summary>
         /// 获取低位数据
         /// </summary>
@@ -526,230 +517,11 @@ namespace Larks.RichView
         }
 
         /// <summary>
-        /// 获取高位数据
-        /// </summary>
-        /// <param name="LParam"></param>
-        /// <returns></returns>
-        private int HIWORD(int LParam)
-        {
-            return (LParam) >> 16;
-        }
-
-        /// <summary>
-        /// 处理windows消息
-        /// </summary>
-        /// <param name="m">消息</param>
-        public new void WndProc(ref Message m)
-        {
-            if (IsDesignMode())
-            {
-                return;
-            }
-           
-            int mouseX = 0;
-            int mouseY = 0;
-            switch (m.Msg)
-            {
-                case WM_CUT:
-                    Debug.WriteLine("WM_CUT");
-                    //var cutStr = SelectedString();
-                    //if (!string.IsNullOrEmpty(cutStr))
-                    //{
-                    //    BackspaceItem(true);
-                    //    Clipboard.SetDataObject(cutStr);
-                    //}
-                    break;
-                case WM_COPY:
-                    Debug.WriteLine("WM_COPY");
-                    //var copyStr = SelectedString();
-                    //if (!string.IsNullOrEmpty(copyStr))
-                    //    Clipboard.SetDataObject(copyStr);
-                    break;
-                case WM_PASTE:
-                    Debug.WriteLine("WM_PASTE");
-                    IDataObject iData = Clipboard.GetDataObject();
-                    if (iData.GetDataPresent(DataFormats.Text))
-                    {
-                        //如果剪贴板中的数据是文本格式 
-                        var psateStr = (string)iData.GetData(DataFormats.Text);//检索与指定格式相关联的数据 
-                        ProcessingIMEInput(psateStr, ControlKey.None);
-                    }
-
-                    break;
-                case WM_CLEAR:
-                    Debug.WriteLine("WM_CLEAR");
-                    break;
-                case WM_UNDO:
-                    Debug.WriteLine("WM_UNDO");
-                    //Undo();
-                    Clipboard.Clear();
-                    break;
-                case WM_SETFOCUS:
-                    Debug.WriteLine("获得焦点");
-                    IsFocus = true;
-                    KeyPressForAfterFocus = true;
-                    break;
-                case WM_KILLFOCUS:
-                    Debug.WriteLine("失去焦点");
-                    IsFocus = false;
-                    break;
-                case WM_KEYUP:
-                    ProcessingKeyUp((int)m.WParam);
-                    KeyPressForAfterFocus = false;
-                    break;
-                case WM_KEYDOWN:
-                    ProcessingKeyDown((int)m.WParam);
-                    break;
-                case WM_SIZE:
-                    ContextViewInfo.Layout.PageSize = this.Size;
-                    if (Lines.Count > 0)
-                        Lines[0].Measure(true);
-                    break;
-                case WM_LBUTTONDOWN:
-                    mouseX = LOWORD(m.LParam);
-                    mouseY = HIWORD(m.LParam);
-                    ContextViewInfo.CalculationCursorLine(mouseX, mouseY);
-                    if (ContextItems.Count == 0)
-                        break;
-                    
-                    //ClearSelect();
-                    //mouseX = LOWORD(m.LParam);
-                    //mouseY = HIWORD(m.LParam);
-                    //if (PictureEditor.MouseInPictureEditor(mouseX, mouseY))
-                    //{
-                    //    PictureEditor.OnLButtonDown(mouseX, mouseY);
-                    //}
-                    //else
-                    //{
-                    //    var t = GetMouseInItem(mouseX, mouseY);
-                    //    if (t != null)
-                    //    {
-                    //        CursorIndex = ItemToCursor(t.InItem, t.Area);
-                    //        MouseStartIndex = CursorIndex;
-                    //        ClearSelect();
-                    //        CalculateCursorPoint();
-                    //        CallDrawContext();
-                    //        if (t.InItem.ItemType == ItemType.Image)
-                    //        {
-                    //            PictureEditor.Bind(t);
-                    //            PictureEditor.OnLButtonDown(mouseX, mouseY);
-                    //        }
-                    //        else
-                    //            PictureEditor.UnBind();
-                    //    }
-                    //    else
-                    //        CalculateCursorPoint();
-                    //}
-
-                    break;
-                case WM_MOUSEMOVE:
-                    mouseX = LOWORD(m.LParam);
-                    mouseY = HIWORD(m.LParam);
-                    //if (PictureEditor.EditorMouseDown || PictureEditor.MouseInPictureEditor(mouseX, mouseY))
-                    //{
-                    //    if ((int)m.WParam == MK_LBUTTON)
-                    //        PictureEditor.OnLButtonMove(mouseX, mouseY);
-                    //    break;
-                    //}
-                    //var endItem = GetMouseInItem(mouseX, mouseY);
-                    //if (endItem != null)
-                    //{
-                    //    if ((int)m.WParam == MK_LBUTTON)
-                    //    {
-                    //        var endIndex = (int)ItemToCursor(endItem.InItem, endItem.Area);
-                    //        MouseMoveItem((int)MouseStartIndex, (int)endIndex);
-                    //        CursorIndex = endIndex;
-                    //    }
-
-                    //}
-                    break;
-                case WM_LBUTTONUP:
-                    mouseX = LOWORD(m.LParam);
-                    mouseY = HIWORD(m.LParam);
-                    //if (PictureEditor.MouseInPictureEditor(mouseX, mouseY))
-                    //    PictureEditor.OnLButtonUp(mouseX, mouseY);
-                    break;
-                case WM_LBUTTONDBLCLK:
-                    //一般的情况下，如果没有指定CS_DBLCLKS，在窗口的消息循环里将不会得到WM_LBUTTONDBLCLK消息。
-                    //如果是API创建的窗体需要在风格中设置CS_DBLCLKS
-                    Debug.WriteLine($"{DateTime.Now}=>WM_LBUTTONDBLCLK");
-
-                    break;
-            }
-            if (IsInitialization)
-            {
-                IME.ImmOperation(m); //输入法
-            }
-           
-
-        }
-        /// <summary>
-        /// 处理IME输入字符串
-        /// </summary>
-        /// <param name="text">热输入的字符串</param>
-        /// <param name="key">控制符</param>
-        private void ProcessingIMEInput(string text, ControlKey key = ControlKey.None)
-        {
-            //if (PictureEditor.IsBind)
-            //    return;
-            //var oldView = ContextViewInfo.Clone();
-            //var oldCursorIndex = CursorIndex;
-
-            List<ContentItem> newItem = new List<ContentItem>();
-            if (key == ControlKey.None)
-            {
-                var l = text.ToCharArray();
-                foreach (var s in l)
-                {
-                    if (s.ToString() == " ")
-                        newItem.Add(TextContent.Space);
-                    else
-                        newItem.Add(new TextContent(s.ToString(), 0));
-                }
-            }
-            else
-            {
-                switch (key)
-                {
-                    case ControlKey.Enter:
-                        newItem.Add(TextContent.Enter);
-                        break;
-                    case ControlKey.Tab:
-                        newItem.Add(TextContent.Tab);
-                        break;
-                    default:
-                        return;
-                }
-
-            }
-            var sl = ContextItems.Where(o => o.IsSelect).ToList();
-            if (sl != null && sl.Count != 0)
-            {
-                CursorIndex = ContextItems.IndexOf(sl[0]);
-                foreach (var t in sl)
-                    ContextItems.Remove(t);
-            }
-            if (CursorIndex == ContextItems.Count)
-            {
-                ContextItems.AddRange(newItem);
-                CursorIndex = ContextItems.Count;
-            }
-            else
-            {
-                ContextItems.InsertRange((int)CursorIndex, newItem);
-                CursorIndex += newItem.Count;
-            }
-            ContextViewInfo.AddItems(newItem);
-            ContextViewInfo.InvokeOnDraw();
-        }
-
-        /// <summary>
         /// 处理键盘消息
         /// </summary>
         private void ProcessingKeyUp(int keyUp_WParam)
         {
-            //if (PictureEditor.IsBind && keyUp_WParam != VK_TAB)
-            //    return;
+            
             switch (keyUp_WParam)
             {
                 case VK_SHIFT:
@@ -768,63 +540,19 @@ namespace Larks.RichView
                     break;
                 case VK_LEFT:
                     Debug.WriteLine("按下[←]");
-                    //if (IsShiftDown)
-                    //    MoveLast();
-                    //else
-                    //{
-                    //    if (TextSelected)
-                    //    {
-                    //        ClearSelect();
-                    //        CallDrawContext();
-                    //    }
-                    //    else
-                    //        MoveLast();
-                    //}
+                   
                     break;
                 case VK_UP:
                     Debug.WriteLine("按下[↑]");
-                    //if (IsShiftDown)
-                    //    MoveLastLine();
-                    //else
-                    //{
-                    //    if (TextSelected)
-                    //    {
-                    //        ClearSelect();
-                    //        CallDrawContext();
-                    //    }
-                    //    else
-                    //        MoveLastLine();
-                    //}
+                    
                     break;
                 case VK_RIGHT:
                     Debug.WriteLine("按下[→]");
-                    //if (IsShiftDown)
-                    //    MoveNext();
-                    //else
-                    //{
-                    //    if (TextSelected)
-                    //    {
-                    //        ClearSelect();
-                    //        CallDrawContext();
-                    //    }
-                    //    else
-                    //        MoveNext();
-                    //}
+                    
                     break;
                 case VK_DOWN:
                     Debug.WriteLine("按下[↓]");
-                    //if (IsShiftDown)
-                    //    MoveNextLine();
-                    //else
-                    //{
-                    //    if (TextSelected)
-                    //    {
-                    //        ClearSelect();
-                    //        CallDrawContext();
-                    //    }
-                    //    else
-                    //        MoveNextLine();
-                    //}
+                    
                     break;
 
             }
@@ -844,11 +572,9 @@ namespace Larks.RichView
                     break;
                 case VK_BACK:
                     Debug.WriteLine("按下[Backspace]");
-                    //BackspaceItem();
                     break;
                 case VK_DELETE:
                     Debug.WriteLine("按下[Delete]");
-                    //DeleteItem();
                     break;
                 case VK_PRIOR:
                     Debug.WriteLine("按下[PageUp]");
@@ -866,7 +592,6 @@ namespace Larks.RichView
                     if (IsCmdKeyDown(VK_CONTROL) && !IsCmdKeyDown(VK_ALT))
                     {
                         Debug.WriteLine("Ctl+A");
-                        //SetSelectAll();
                     }
                     break;
                 case (int)Keys.Z:
@@ -922,64 +647,25 @@ namespace Larks.RichView
         }
 
         /// <summary>
-        /// 处理按下方向键和Tab键焦点转移的问题
+        /// 是否在IDE设计模式
         /// </summary>
-        /// <param name="msg"></param>
-        /// <param name="keyData"></param>
         /// <returns></returns>
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        private bool IsDesignMode()
         {
-            //Debug.WriteLine($"IsFocus:{IsFocus}");
-            if (IsFocus && msg.Msg == WM_KEYDOWN)
+            bool returnFlag = false;
+
+#if DEBUG
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
             {
-                switch ((int)msg.WParam)
-                {
-                    case VK_TAB:
-                    case VK_LEFT:
-                    case VK_UP:
-                    case VK_RIGHT:
-                    case VK_DOWN:
-                        return true;
-                }
+                returnFlag = true;
             }
-            return base.ProcessCmdKey(ref msg, keyData);
+            else if (Process.GetCurrentProcess().ProcessName == "devenv")
+            {
+                returnFlag = true;
+            }
+#endif
+
+            return returnFlag;
         }
-
-        #endregion
-
-        /// <summary>
-        /// 改变画布大小
-        /// </summary>
-        private void ChangeGrapicsSize(int width, int height)
-        {
-
-            if (this.Width == 0 || this.Height == 0)
-                return;
-            //lock (IsDraw)
-            //{
-
-            //    //中间层
-            //    MiddleLayerBitmap?.Dispose();
-            //    MiddleLayerGraphics?.Dispose();
-
-            //    //合成层
-            //    BlendBitmap?.Dispose();
-            //    BlendGraphics?.Dispose();
-            //    //此实例画布
-            //    Graphics?.Dispose();
-
-            //    Graphics = this.CreateGraphics();
-            //    MiddleLayerBitmap = new Bitmap(width, height);
-            //    MiddleLayerGraphics = Graphics.FromImage(MiddleLayerBitmap);
-            //    MiddleLayerGraphics.SmoothingMode = SmoothingMode.AntiAlias;
-            //    BlendBitmap = new Bitmap(MiddleLayerBitmap.Width, MiddleLayerBitmap.Height);
-            //    BlendGraphics = Graphics.FromImage(BlendBitmap);
-            //    BlendGraphics.SmoothingMode = SmoothingMode.AntiAlias;
-            //    //ContextViewInfo.OnGraphicsChange(MiddleLayerGraphics);
-            //}
-            ////MeasureItems(0);
-        }
-
-     
     }
 }
