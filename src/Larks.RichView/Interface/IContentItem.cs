@@ -19,9 +19,13 @@
         /// </summary>
         ItemType ItemType { get; }
         /// <summary>
-        /// Item文本
+        /// 实际文本
         /// </summary>
         string Text { get; }
+        /// <summary>
+        /// 绘制文本
+        /// </summary>
+        string DrawText { get; }
         /// <summary>
         /// 文本风格
         /// </summary>

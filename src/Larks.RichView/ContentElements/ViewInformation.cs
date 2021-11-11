@@ -11,6 +11,38 @@ namespace Larks.RichView.ContentElements
     /// </summary>
     public class RichViewInformation:IDisposable
     {
+        private object CallDraw =new();
+        private Graphics _ViewGraphics;
+        /// <summary>
+        /// View画布
+        /// </summary>
+        public Graphics ViewGraphics {
+            get => _ViewGraphics;
+            set {
+                if (_ViewGraphics == value)
+                    return;
+                lock (CallDraw)
+                {
+                    _ViewGraphics = value;
+                    OnDraw?.Invoke(_ViewGraphics);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 绘制元素
+        /// </summary>
+        public Action<Graphics> OnDraw;
+        internal void InvokOnDraw()
+        {
+            lock (CallDraw)
+            {
+                _ViewGraphics.Clear(Color.Transparent);
+                OnDraw?.Invoke(_ViewGraphics);
+            }
+            
+        }
+
         /// <summary>
         /// 光标所在的索引
         /// </summary>

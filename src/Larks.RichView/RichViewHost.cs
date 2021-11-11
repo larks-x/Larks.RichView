@@ -11,19 +11,16 @@ namespace Larks.RichView
     /// </summary>
     public class RichViewHost : BaseHost
     {
-     
+       
         /// <summary>
         /// 创建RichViewHost
         /// </summary>
-        /// <param name="userControl">主机挂在的自定义控件</param>
-        public RichViewHost(UserControl userControl)
+        /// <param name="userControl">主机挂载的自定义控件</param>
+        public RichViewHost(UserControl userControl):base()
         {
-            Handle = userControl.Handle;          
-            IME = new ImeComponent(userControl);
-            IME.InputText += (s) =>
-            {
-                ProcessingIMEInput(s);
-            };
+            //userControl.DoubleBuffered = true;
+            Handle = userControl.Handle;
+            userControl.CreateGraphics();
             IsInitialization = true;
             
         }
@@ -36,8 +33,34 @@ namespace Larks.RichView
         /// <exception cref="NotImplementedException"></exception>
         protected override void InputText(string text, ControlKey key)
         {
-            MoveSetCaretPos(100, 100);
-            //throw new NotImplementedException();
+            List<IContentItem> items = new List<IContentItem>();
+            if (key == ControlKey.None)
+            {
+                var array = text.ToCharArray();
+                array.ToList().ForEach((item) =>
+                {
+                    if (item.ToString() == Constant.Space)
+                        items.Add(TextItem.Space);
+                    else
+                        items.Add(new TextItem(item.ToString()));
+                });
+            }
+            else
+            {
+                switch (key)
+                {
+                    case ControlKey.Enter:
+                        items.Add(TextItem.Enter);
+                        break;
+                    case ControlKey.Tab:
+                        items.Add(TextItem.Tab);
+                        break;
+                    default:
+                        return;
+                }
+            }
+            RichViewInfo.AddRangeItem(items);
+           
         }
     }
 }

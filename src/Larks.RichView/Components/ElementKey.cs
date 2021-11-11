@@ -1,4 +1,4 @@
-﻿namespace Larks.RichView.ContentElements
+﻿namespace Larks.RichView.Components
 {
     /// <summary>
     /// 元素唯一键

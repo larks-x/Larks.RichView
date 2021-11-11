@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Larks.RichView.ContentElements
+﻿namespace Larks.RichView.Components
 {
     /// <summary>
     /// 内容元素
@@ -14,19 +8,34 @@ namespace Larks.RichView.ContentElements
         /// <summary>
         /// RichViewInfo引用
         /// </summary>
+        [JsonIgnore]
         public RichViewInformation RichViewInfo { get; private set; }
         /// <summary>
         /// 编号
         /// </summary>
+        [JsonIgnore]
         public int No => RichViewInfo == null ? -1 : RichViewInfo.ContentItems.IndexOf(this);
         /// <summary>
         /// 类型
         /// </summary>
-        public ItemType ItemType { get; set; }
+        public virtual ItemType ItemType { get; set; }
         /// <summary>
-        /// 文本
+        /// 实际文本
         /// </summary>
         public string Text { get; set; }
+        /// <summary>
+        /// 绘制文本
+        /// </summary>
+        [JsonIgnore]
+        public virtual string DrawText
+        {
+            get => Text;
+            set {
+                if (Text == value)
+                    return;
+                Text = value;
+            }
+        }
         /// <summary>
         /// Style编号
         /// </summary>
@@ -38,11 +47,11 @@ namespace Larks.RichView.ContentElements
         /// <summary>
         /// 是否为控制键
         /// </summary>
-        public bool IsControlKey { get; internal set; }
+        public virtual bool IsControlKey { get; internal set; }
         /// <summary>
         /// 控制键
         /// </summary>
-        public ControlKey Key { get; internal set; }
+        public virtual ControlKey Key { get; internal set; }
         /// <summary>
         /// 左上角绘制位置
         /// </summary>
@@ -54,18 +63,19 @@ namespace Larks.RichView.ContentElements
         /// <summary>
         /// 绘制大小
         /// </summary>
-        public SizeF DrawSize { get; set; }
+        public virtual SizeF DrawSize { get; set; }
         /// <summary>
         /// 绘制区域
         /// </summary>
+        [JsonIgnore]
         public RectangleF DrawRectangle => new RectangleF(Location,DrawSize);
 
-        public void Draw()
+        public virtual void Draw()
         {
             throw new NotImplementedException();
         }
 
-        public RectangleF Measure()
+        public virtual RectangleF Measure()
         {
             throw new NotImplementedException();
         }
@@ -76,7 +86,7 @@ namespace Larks.RichView.ContentElements
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public MouseInItem PointInItem(float x, float y)
+        public virtual MouseInItem PointInItem(float x, float y)
         {
             var rect = DrawRectangle;
             if (!rect.Contains(x, y))
@@ -101,7 +111,7 @@ namespace Larks.RichView.ContentElements
         /// <summary>
         /// 释放
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
            
         }

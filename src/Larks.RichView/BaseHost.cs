@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Larks.RichView
 {
-    public abstract class BaseHost
+    public abstract class BaseHost:IDisposable
     {
         #region WinAPI
         /// <summary>
@@ -47,6 +47,20 @@ namespace Larks.RichView
         private static extern bool GetCaretPos(out Point lpPoint);
         [DllImport("user32.dll")]
         private static extern bool DestroyCaret();
+        /// <summary>
+        /// 获取显示插入符闪烁的毫秒数
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("user32", EntryPoint = "GetCaretBlinkTime")]
+        private static extern uint GetCaretBlinkTime();
+
+        /// <summary>
+        /// 设置显示插入符闪烁的毫秒数
+        /// </summary>
+        /// <param name="uMSeconds">毫秒数</param>
+        /// <returns></returns>
+        [DllImport("user32", EntryPoint = "SetCaretBlinkTime")]
+        private static extern bool SetCaretBlinkTime(uint uMSeconds);
 
         #region WM
         //https://www.cnblogs.com/gaara-zhang/p/10706224.html
@@ -335,13 +349,37 @@ namespace Larks.RichView
         #endregion
 
         /// <summary>
+        /// 页面信息
+        /// </summary>
+        public RichViewInformation RichViewInfo = new();
+
+        /// <summary>
         /// IME组件
         /// </summary>
         protected ImeComponent IME;
+        private IntPtr handle = IntPtr.Zero;
         /// <summary>
         /// host绑定的handle
         /// </summary>
-        public IntPtr Handle { get; protected set; }
+        public IntPtr Handle {
+            get => handle;
+            protected set
+            {
+                if (handle == value)
+                    return;
+                if (RichViewInfo.ViewGraphics != null)
+                    RichViewInfo.ViewGraphics = null;
+                RichViewInfo.ViewGraphics = Graphics.FromHwnd(handle);
+                handle = value;
+                if (IME != null)
+                    IME = null;
+                IME = new ImeComponent(handle);
+                IME.InputText += (s) =>
+                {
+                    ProcessingIMEInput(s);
+                };
+            }
+        }
 
         /// <summary>
         /// 获得焦点后第一次按键，用于处理Tab键的逻辑
@@ -359,7 +397,7 @@ namespace Larks.RichView
         /// 是否获得了焦点
         /// </summary>
         protected bool IsFocus = false;
-
+        
         /// <summary>
         /// 输入字符串或控制符
         /// </summary>
@@ -376,34 +414,6 @@ namespace Larks.RichView
         {
             Debug.WriteLine($"控制键:{key.ToString()};输入:{text}");
             InputText(text, key);
-            //List<ItemInfo> newItem = new List<ItemInfo>();
-            //if (key == ControlKey.None)
-            //{
-            //    var l = text.ToCharArray();
-            //    foreach (var s in l)
-            //    {
-            //        if (s.ToString() == " ")
-            //            newItem.Add(ItemInfo.Space);
-            //        else
-            //            newItem.Add(new ItemInfo(s.ToString(), 0));
-            //    }
-            //}
-            //else
-            //{
-            //    switch (key)
-            //    {
-            //        case ControlKey.Enter:
-            //            //newItem.Add(ItemInfo.Enter);
-            //            break;
-            //        case ControlKey.Tab:
-            //            //newItem.Add(ItemInfo.Tab);
-            //            break;
-            //        default:
-            //            return;
-            //    }
-
-            //}
-
         }
 
         /// <summary>
@@ -444,15 +454,16 @@ namespace Larks.RichView
                     break;
                 case WM_SETFOCUS:
                     Debug.WriteLine("获得焦点");
-                    CreateCaret(Handle, IntPtr.Zero, 0, 50);
-                    ShowCaret(Handle);
+                    ShowCaret();
                     
+                    Debug.WriteLine("三所毫秒数"+GetCaretBlinkTime().ToString());
                     IsFocus = true;
                     KeyPressForAfterFocus = true;
                     break;
                 case WM_KILLFOCUS:
                     Debug.WriteLine("失去焦点");
-                    HideCaret(Handle);
+                    HideCaret();
+                    
                     IsFocus = false;
                     break;
                 case WM_KEYUP:
@@ -469,7 +480,9 @@ namespace Larks.RichView
                 case WM_LBUTTONDOWN:
                     mouseX = LOWORD(m.LParam);
                     mouseY = HIWORD(m.LParam);
-
+                    if (RichViewInfo.ViewGraphics != null)
+                        RichViewInfo.ViewGraphics = null;
+                    RichViewInfo.ViewGraphics = Graphics.FromHwnd(handle);
 
                     break;
                 case WM_MOUSEMOVE:
@@ -677,9 +690,54 @@ namespace Larks.RichView
             return returnFlag;
         }
 
-        protected void MoveSetCaretPos(int x,int y)
+        /// <summary>
+        /// 创建光标
+        /// </summary>
+        protected void CreateCaret()
         {
+            //创建光标
+            CreateCaret(Handle, IntPtr.Zero, 0, 20);
+            SetCaretBlinkTime(600);
+        }
+
+        /// <summary>
+        /// 显示光标
+        /// </summary>
+        protected void ShowCaret()
+        {
+            HideCaret();
+            CreateCaret();
+            ShowCaret(Handle);
+
+        }
+
+        /// <summary>
+        /// 隐藏光标
+        /// </summary>
+        protected void HideCaret()
+        {
+            HideCaret(Handle);
+            DestroyCaret();
+        }
+
+        /// <summary>
+        /// 移动插入符到指定位置
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        protected void MoveCaretPos(int x,int y)
+        {
+            ShowCaret();
             SetCaretPos(x, y);
+        }
+
+        /// <summary>
+        /// 释放
+        /// </summary>
+        public void Dispose()
+        {
+            //销毁光标
+            DestroyCaret();
         }
     }
 }

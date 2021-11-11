@@ -41,32 +41,32 @@
         /// 输入法组件
         /// </summary>
         /// <param name="control"></param>
-        public ImeComponent(UserControl control)
+        public ImeComponent(IntPtr handle)
         {
-            var handle = control.Handle;
+            
             hIMC = ImmGetContext(handle);
-            if (control is RichView)
-            {
-                IsRichView = true;
-                //((DrawingManaged)control).CursorPointChange += (c) =>
-                //{
-                //    CursorInfo = c;
-                //    //输入法位置
-                //    if (IsRichView && CursorInfo != CursorPointInfo.Empty)
-                //    {
-                //        COMPOSITIONFORM cf = new();
-                //        cf.dwStyle = CFS_POINT;
-                //        cf.ptCurrentPos.X = (int)CursorInfo.Left;
-                //        cf.ptCurrentPos.Y = (int)CursorInfo.Top;
-                //        cf.rcArea.Bottom = 10;
-                //        cf.rcArea.Top = 10;
-                //        cf.rcArea.Left = 10;
-                //        cf.rcArea.Right = 10;
-                //        ImmSetCompositionWindow(hIMC, ref cf);
-                //    }
-                //};
+            //if (control is RichView)
+            //{
+            //    IsRichView = true;
+            //    //((DrawingManaged)control).CursorPointChange += (c) =>
+            //    //{
+            //    //    CursorInfo = c;
+            //    //    //输入法位置
+            //    //    if (IsRichView && CursorInfo != CursorPointInfo.Empty)
+            //    //    {
+            //    //        COMPOSITIONFORM cf = new();
+            //    //        cf.dwStyle = CFS_POINT;
+            //    //        cf.ptCurrentPos.X = (int)CursorInfo.Left;
+            //    //        cf.ptCurrentPos.Y = (int)CursorInfo.Top;
+            //    //        cf.rcArea.Bottom = 10;
+            //    //        cf.rcArea.Top = 10;
+            //    //        cf.rcArea.Left = 10;
+            //    //        cf.rcArea.Right = 10;
+            //    //        ImmSetCompositionWindow(hIMC, ref cf);
+            //    //    }
+            //    //};
 
-            }
+            //}
             this.handle = handle;
         }
         /// <summary>
