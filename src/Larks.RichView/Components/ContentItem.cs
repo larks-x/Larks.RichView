@@ -5,11 +5,23 @@
     /// </summary>
     public class ContentItem : ElementKey, IContentItem
     {
+        private RichViewInformation _RichViewInfo = null;
         /// <summary>
         /// RichViewInfo引用
         /// </summary>
         [JsonIgnore]
-        public RichViewInformation RichViewInfo { get; private set; }
+        public RichViewInformation RichViewInfo {
+            get => _RichViewInfo;
+            set {
+                if (_RichViewInfo != null)
+                    return;
+                _RichViewInfo = value;
+                _RichViewInfo.OnDraw += (graphics) =>
+                {
+                    Draw();
+                };
+            }
+        }
         /// <summary>
         /// 编号
         /// </summary>
@@ -70,14 +82,37 @@
         [JsonIgnore]
         public RectangleF DrawRectangle => new RectangleF(Location,DrawSize);
 
+        /// <summary>
+        /// 绘制
+        /// </summary>
         public virtual void Draw()
         {
-            throw new NotImplementedException();
+            RichViewInfo.ViewGraphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle);
         }
 
+        /// <summary>
+        /// 测量
+        /// </summary>
+        /// <returns></returns>
         public virtual RectangleF Measure()
         {
-            throw new NotImplementedException();
+            if (IsControlKey)
+            {
+                //空格只占半个中文的宽度
+                Size = RichViewInfo.ViewGraphics.MeasureString("测", RichViewInfo.Styles[0].StyleFont, 800, StringFormat.GenericTypographic);
+                Size = new SizeF( Size.Width / 2,Size.Height);
+                if (Key == ControlKey.Tab)
+                    Size = new SizeF(Size.Width * RichViewInfo.Layout.TabToSpace, Size.Height); 
+                if (Key == ControlKey.Enter)
+                    Size = new SizeF(1, Size.Height);
+            }
+            else
+            {
+                if (ItemType == ItemType.Text)
+                    Size = RichViewInfo.ViewGraphics.MeasureString(Text, RichViewInfo.Styles[StyleNo].StyleFont, 800, StringFormat.GenericTypographic);
+                
+            }
+            return DrawRectangle;
         }
 
         /// <summary>

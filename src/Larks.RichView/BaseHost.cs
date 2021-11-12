@@ -357,6 +357,11 @@ namespace Larks.RichView
         /// IME组件
         /// </summary>
         protected ImeComponent IME;
+
+        /// <summary>
+        /// 绑定控件
+        /// </summary>
+        protected UserControl BindUserControl;
         private IntPtr handle = IntPtr.Zero;
         /// <summary>
         /// host绑定的handle
@@ -367,9 +372,7 @@ namespace Larks.RichView
             {
                 if (handle == value)
                     return;
-                if (RichViewInfo.ViewGraphics != null)
-                    RichViewInfo.ViewGraphics = null;
-                RichViewInfo.ViewGraphics = Graphics.FromHwnd(handle);
+               
                 handle = value;
                 if (IME != null)
                     IME = null;
@@ -476,13 +479,14 @@ namespace Larks.RichView
                 case WM_SIZE:
                     width = LOWORD(m.LParam);
                     height = HIWORD(m.LParam);
+                    if (RichViewInfo.ViewGraphics != null)
+                        RichViewInfo.ViewGraphics = null;
+                    RichViewInfo.ViewGraphics = BindUserControl.CreateGraphics();
                     break;
                 case WM_LBUTTONDOWN:
                     mouseX = LOWORD(m.LParam);
                     mouseY = HIWORD(m.LParam);
-                    if (RichViewInfo.ViewGraphics != null)
-                        RichViewInfo.ViewGraphics = null;
-                    RichViewInfo.ViewGraphics = Graphics.FromHwnd(handle);
+                    
 
                     break;
                 case WM_MOUSEMOVE:

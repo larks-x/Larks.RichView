@@ -5,7 +5,7 @@
         /// <summary>
         /// RichViewInfo引用
         /// </summary>
-        RichViewInformation RichViewInfo { get; }
+        RichViewInformation RichViewInfo { get; set; }
         /// <summary>
         /// 元素编号
         /// </summary>
@@ -75,6 +75,7 @@
         /// <param name="y"></param>
         /// <returns></returns>
         MouseInItem PointInItem(float x, float y);
+
         /// <summary>
         /// 绘制元素
         /// </summary>

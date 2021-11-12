@@ -37,7 +37,7 @@ namespace Larks.RichView.ContentElements
         {
             lock (CallDraw)
             {
-                _ViewGraphics.Clear(Color.Transparent);
+                _ViewGraphics.Clear(Color.White);
                 OnDraw?.Invoke(_ViewGraphics);
             }
             
@@ -52,11 +52,45 @@ namespace Larks.RichView.ContentElements
         /// 布局信息
         /// </summary>
         public ViewLayout Layout = new();
+        /// <summary>
+        /// 字体风格
+        /// </summary>
+        public List<StyleInfo> Styles = new();
         
         /// <summary>
         /// RichView的元素
         /// </summary>
         public ContainerList<IContentItem> ContentItems = new();
+
+
+        public RichViewInformation()
+        {
+            Styles.Add(StyleInfo.Default);
+            ContentItems.ItemAdd += (item) =>{
+                item.RichViewInfo = this;
+                item.Measure();
+            };
+            ContentItems.ItemAddRange += (items) =>
+            {
+                items.ToList().ForEach(item =>
+                {
+                    item.RichViewInfo = this;
+                    item.Measure();
+                });
+            };
+            ContentItems.ItemInsert += (index,item) => {
+                item.RichViewInfo = this;
+                item.Measure();
+            };
+            ContentItems.ItemInsertRange += (index,items) =>
+            {
+                items.ToList().ForEach(item =>
+                {
+                    item.RichViewInfo = this;
+                    item.Measure();
+                });
+            };
+        }
 
         /// <summary>
         /// 插入元素
@@ -101,6 +135,8 @@ namespace Larks.RichView.ContentElements
         /// </summary>
         public void Dispose()
         {
+            Styles.Clear();
+            Styles = null;
             ContentItems.Dispose();
         }
     }

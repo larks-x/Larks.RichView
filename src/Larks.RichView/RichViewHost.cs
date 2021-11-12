@@ -20,7 +20,8 @@ namespace Larks.RichView
         {
             //userControl.DoubleBuffered = true;
             Handle = userControl.Handle;
-            userControl.CreateGraphics();
+            BindUserControl = userControl;
+            RichViewInfo.ViewGraphics= BindUserControl.CreateGraphics();
             IsInitialization = true;
             
         }
@@ -60,7 +61,7 @@ namespace Larks.RichView
                 }
             }
             RichViewInfo.AddRangeItem(items);
-           
+            RichViewInfo.InvokOnDraw();
         }
     }
 }
