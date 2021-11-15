@@ -47,12 +47,12 @@ namespace Larks.RichView
         public RichView()
         {
             InitializeComponent();
-            ////DoubleBuffer双缓冲，AllPaintingInWmPaint禁止擦除背景
-            //userControl.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.OptimizedDoubleBuffer
-            //| ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw
-            //| ControlStyles.SupportsTransparentBackColor
-            //, true);
-            //userControl.UpdateStyles();
+            //DoubleBuffer双缓冲，AllPaintingInWmPaint禁止擦除背景
+            this.SetStyle(ControlStyles.DoubleBuffer | ControlStyles.OptimizedDoubleBuffer
+            | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw
+            | ControlStyles.SupportsTransparentBackColor
+            , true);
+            this.UpdateStyles();
 
             host = new RichViewHost(this);
         }

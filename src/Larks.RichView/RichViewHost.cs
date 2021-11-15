@@ -45,6 +45,7 @@ namespace Larks.RichView
                         items.Add(TextItem.Space);
                     else
                         items.Add(new TextItem(item.ToString()));
+
                 });
             }
             else

@@ -26,7 +26,6 @@
             }
         }
 
-        private int _No = -1;
         /// <summary>
         /// 编号
         /// </summary>
@@ -152,6 +151,7 @@
         public virtual void Draw(Graphics graphics)
         {
             graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle, StringFormat.GenericTypographic);
+            //graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, Location);
         }
 
         /// <summary>
@@ -202,9 +202,9 @@
             else
             {
                 if (pItem == null)
-                    SetLocationInLine(0, RichViewInfo.ContentLines[LineNo].Bottom);
+                    SetLocationInLine(0, RichViewInfo.ContentLines[LineNo].Height);
                 else
-                    SetLocationInLine(pItem.DrawRectangle.Right, RichViewInfo.ContentLines[LineNo].Bottom);
+                    SetLocationInLine(pItem.DrawRectangle.Right, RichViewInfo.ContentLines[LineNo].Height);
             }  
         }
 

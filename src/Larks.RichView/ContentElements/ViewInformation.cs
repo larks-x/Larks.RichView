@@ -57,7 +57,10 @@ namespace Larks.RichView.ContentElements
                 _BuffBitmap = null;
             }
             _BuffBitmap = new Bitmap(width, height);
+            
             _BuffGraphics = Graphics.FromImage(_BuffBitmap);
+            _BuffGraphics.SmoothingMode = SmoothingMode.HighQuality;
+            _BuffGraphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
         }
 
         /// <summary>
@@ -69,11 +72,11 @@ namespace Larks.RichView.ContentElements
             lock (CallDraw)
             {
                 Debug.WriteLine($"开始绘制");
-                _BuffGraphics.Clear(Color.Transparent);
-                OnDraw?.Invoke(_ViewGraphics);
+                _BuffGraphics.Clear(Color.White);
+                OnDraw?.Invoke(_BuffGraphics);
                 Debug.WriteLine($"所有元素绘制完成");
                 Debug.WriteLine($"清屏");
-                _ViewGraphics.Clear(Color.White);
+                //_ViewGraphics.Clear(Color.White);
                 Debug.WriteLine($"翻转");
                 _ViewGraphics.DrawImage(_BuffBitmap, 0, 0);
             }
@@ -122,6 +125,7 @@ namespace Larks.RichView.ContentElements
                     item.LineNo = CursorLine;
                     //ContentLines[CursorLine].Measure();
                     item.Measure();
+                    ContentLines[CursorLine].Measure();
                 }
                 InvokOnDraw();
             };
@@ -138,6 +142,8 @@ namespace Larks.RichView.ContentElements
                         item.LineNo = CursorLine;
                         //ContentLines[CursorLine].Measure();
                         item.Measure();
+                        ContentLines[CursorLine].Measure();
+
                     }
                 });
                 InvokOnDraw();
@@ -152,6 +158,7 @@ namespace Larks.RichView.ContentElements
                     item.LineNo = CursorLine;
                     //ContentLines[CursorLine].Measure();
                     item.Measure();
+                    ContentLines[CursorLine].Measure();
                 }
                 InvokOnDraw();
             };
@@ -168,6 +175,7 @@ namespace Larks.RichView.ContentElements
                         item.LineNo = CursorLine;
                         //ContentLines[CursorLine].Measure();
                         item.Measure();
+                        ContentLines[CursorLine].Measure();
                     }
                 });
                 InvokOnDraw();

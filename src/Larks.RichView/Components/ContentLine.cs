@@ -10,6 +10,7 @@ namespace Larks.RichView.Components
     /// </summary>
     public class ContentLine : ICloneable, IDisposable
     {
+        private object DrawLock=new object();
         private Graphics _BuffGraphics;
         private Bitmap _BuffBitmap;
         private RectangleF _DrawRectangle = new RectangleF(1f,1f,1f,1f);
@@ -114,7 +115,7 @@ namespace Larks.RichView.Components
             {
                 item.LineNo = No;
                 item.CalculationLocation();
-                Measure();
+                //Measure();
             };
             Items.ItemAddRange += (items) =>
             {
@@ -123,13 +124,13 @@ namespace Larks.RichView.Components
                     item.LineNo = No;
                     item.CalculationLocation();
                 });
-                Measure();
+                //Measure();
             };
             Items.ItemInsert += (index,item) =>
             {
                 item.LineNo = No;
                 item.CalculationLocation();
-                Measure();
+                //Measure();
             };
             Items.ItemInsertRange += (index,items) =>
             {
@@ -138,7 +139,7 @@ namespace Larks.RichView.Components
                     item.LineNo = No;
                     item.CalculationLocation();
                 });
-                Measure();
+                //Measure();
             };
         }
 
@@ -271,7 +272,13 @@ namespace Larks.RichView.Components
                 var maxHeight= Items.Max(o => o.DrawSize.Height);
 
                 if (Height != maxHeight)
+                {
                     Height = maxHeight;
+                    Items.ForEach((item) =>
+                    {
+                        item.CalculationLocation();
+                    });
+                }
             }
             DrawItem();
 
@@ -291,6 +298,8 @@ namespace Larks.RichView.Components
            
             _BuffBitmap = new Bitmap((int)Width==0?1:(int)Width, (int)Height==0?1:(int)Height);
             _BuffGraphics = Graphics.FromImage(_BuffBitmap);
+            _BuffGraphics.SmoothingMode = SmoothingMode.HighQuality;
+            _BuffGraphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
             Items.ForEach((item) =>
             {
                 item.CalculationLocation();
@@ -299,21 +308,30 @@ namespace Larks.RichView.Components
         /// <summary>
         /// 绘制元素到buff
         /// </summary>
-        private void DrawItem()
+        internal void DrawItem()
         {
-            CreateBuffGraphics();
-            _BuffGraphics.Clear(Color.Transparent);
-            Items.ForEach((item) =>
+            lock (DrawLock)
             {
-                item.Draw(_BuffGraphics);
-            });
+                CreateBuffGraphics();
+                _BuffGraphics.Clear(Color.Transparent);
+                Items.ForEach((item) =>
+                {
+                    item.Draw(_BuffGraphics);
+                });
+            }
+            
         }
         /// <summary>
         /// 绘制行
         /// </summary>
         public void Draw()
         {
-            RichViewInfo?.BuffGraphics?.DrawImage(_BuffBitmap,DrawRectangle);
+            lock (DrawLock)
+            {
+                RichViewInfo?.BuffGraphics?.DrawImage(_BuffBitmap,DrawRectangle);
+                //RichViewInfo?.BuffGraphics?.DrawImage(_BuffBitmap, DrawRectangle.Location);
+            }
+          
         }
 
         /// <summary>

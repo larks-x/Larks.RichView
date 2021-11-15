@@ -15,7 +15,7 @@
         public StyleInfo()
         {
             StyleNo = 0;
-            StyleFont = new Font("宋体", 12);
+            StyleFont = new Font("微软雅黑", 12);
             FontColor = Color.Black;
         }
         /// <summary>
