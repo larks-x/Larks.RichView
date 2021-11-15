@@ -12,10 +12,19 @@ namespace Larks.RichView.ContentElements
     public class RichViewInformation:IDisposable
     {
         private object CallDraw =new();
+        private Graphics _BuffGraphics;
+        private Bitmap _BuffBitmap;
         private Graphics _ViewGraphics;
+
+        /// <summary>
+        /// 启用行绘制模式
+        /// </summary>
+        [JsonIgnore]
+        public bool UseLineModel { get; set; } = true;
         /// <summary>
         /// View画布
         /// </summary>
+        [JsonIgnore]
         public Graphics ViewGraphics {
             get => _ViewGraphics;
             set {
@@ -30,6 +39,28 @@ namespace Larks.RichView.ContentElements
         }
 
         /// <summary>
+        /// 缓存画布
+        /// </summary>
+        [JsonIgnore]
+        public Graphics BuffGraphics => _BuffGraphics;
+
+        /// <summary>
+        /// 创建缓存画布
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public void CreateBuffGraphics(int width,int height)
+        {
+            if (_BuffBitmap != null)
+            {
+                _BuffGraphics?.Dispose();
+                _BuffBitmap = null;
+            }
+            _BuffBitmap = new Bitmap(width, height);
+            _BuffGraphics = Graphics.FromImage(_BuffBitmap);
+        }
+
+        /// <summary>
         /// 绘制元素
         /// </summary>
         public Action<Graphics> OnDraw;
@@ -37,8 +68,14 @@ namespace Larks.RichView.ContentElements
         {
             lock (CallDraw)
             {
-                _ViewGraphics.Clear(Color.White);
+                Debug.WriteLine($"开始绘制");
+                _BuffGraphics.Clear(Color.Transparent);
                 OnDraw?.Invoke(_ViewGraphics);
+                Debug.WriteLine($"所有元素绘制完成");
+                Debug.WriteLine($"清屏");
+                _ViewGraphics.Clear(Color.White);
+                Debug.WriteLine($"翻转");
+                _ViewGraphics.DrawImage(_BuffBitmap, 0, 0);
             }
             
         }
@@ -46,8 +83,12 @@ namespace Larks.RichView.ContentElements
         /// <summary>
         /// 光标所在的索引
         /// </summary>
+        [JsonIgnore]
         public int CursorIndex { get; internal set; } = -1;
-
+        /// <summary>
+        /// 光标所在行
+        /// </summary>
+        public int CursorLine { get; internal set; } = -1;
         /// <summary>
         /// 布局信息
         /// </summary>
@@ -62,34 +103,128 @@ namespace Larks.RichView.ContentElements
         /// </summary>
         public ContainerList<IContentItem> ContentItems = new();
 
+        /// <summary>
+        /// RichView的行
+        /// </summary>
+        public ContainerList<ContentLine> ContentLines = new();
 
         public RichViewInformation()
         {
+           
             Styles.Add(StyleInfo.Default);
             ContentItems.ItemAdd += (item) =>{
                 item.RichViewInfo = this;
-                item.Measure();
+                if (!UseLineModel)
+                    item.Measure();
+                else
+                {
+                    ContentLines[CursorLine].AddItem(item);
+                    item.LineNo = CursorLine;
+                    //ContentLines[CursorLine].Measure();
+                    item.Measure();
+                }
+                InvokOnDraw();
             };
             ContentItems.ItemAddRange += (items) =>
             {
                 items.ToList().ForEach(item =>
                 {
                     item.RichViewInfo = this;
-                    item.Measure();
+                    if (!UseLineModel)
+                        item.Measure();
+                    else
+                    {
+                        ContentLines[CursorLine].AddItem(item);
+                        item.LineNo = CursorLine;
+                        //ContentLines[CursorLine].Measure();
+                        item.Measure();
+                    }
                 });
+                InvokOnDraw();
             };
             ContentItems.ItemInsert += (index,item) => {
                 item.RichViewInfo = this;
-                item.Measure();
+                if (!UseLineModel)
+                    item.Measure();
+                else
+                {
+                    ContentLines[CursorLine].AddItem(item);
+                    item.LineNo = CursorLine;
+                    //ContentLines[CursorLine].Measure();
+                    item.Measure();
+                }
+                InvokOnDraw();
             };
             ContentItems.ItemInsertRange += (index,items) =>
             {
                 items.ToList().ForEach(item =>
                 {
                     item.RichViewInfo = this;
-                    item.Measure();
+                    if (!UseLineModel)
+                        item.Measure();
+                    else
+                    {
+                        ContentLines[CursorLine].AddItem(item);
+                        item.LineNo = CursorLine;
+                        //ContentLines[CursorLine].Measure();
+                        item.Measure();
+                    }
                 });
+                InvokOnDraw();
             };
+            ContentLines.ItemAdd += (line) =>
+            {
+                if (UseLineModel)
+                {
+                    line.RichViewInfo = this;
+                    line.Measure();
+                    CursorMoveNextLine();
+                }
+            };
+            AddLine();
+        }
+        /// <summary>
+        /// 光标向下移动一行
+        /// </summary>
+        public void CursorMoveNextLine()
+        {
+            if (CursorLine < ContentLines.Count - 1)
+                CursorLine++;
+        }
+        /// <summary>
+        /// 光标向上移动一行
+        /// </summary>
+        public void CursorMovePreviousLine()
+        {
+            if (CursorLine > 0)
+                CursorLine--;
+        }
+
+        /// <summary>
+        /// 改变页面大小
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public void ChangePageSize(int width,int height)
+        { 
+            Layout.PageSize = new SizeF((float)width, (float)height);
+            CreateBuffGraphics(width,height);
+            if (UseLineModel)
+            {
+                ContentLines.ForEach((line) =>
+                {
+                    line.Measure();
+                });
+            }
+                
+            if (!UseLineModel)
+            {
+                ContentItems.ForEach((item) =>
+                {
+                    item.CalculationLocation();
+                });
+            }
+                
         }
 
         /// <summary>
@@ -128,6 +263,19 @@ namespace Larks.RichView.ContentElements
         public void AddRangeItem(IEnumerable<IContentItem> items)
         {
             ContentItems.AddRange(items);
+        }
+
+        /// <summary>
+        /// 追加一行,并添加Item
+        /// </summary>
+        /// <param name="items"></param>
+        public void AddLine(IEnumerable<IContentItem> items = null)
+        {
+            ContentLines.Add(new ContentLine());
+            var newLine = ContentLines.Last();
+            newLine.RichViewInfo = this;
+            if (items!=null && items.Count()>0)
+                newLine.AddItems(items);
         }
 
         /// <summary>

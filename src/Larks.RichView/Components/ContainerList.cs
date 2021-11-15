@@ -4,7 +4,7 @@
     /// 容器用list
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ContainerList<T> : IEnumerable<T>, IEnumerable,IDisposable where T : IContentItem
+    public class ContainerList<T> : IEnumerable<T>, IEnumerable,IDisposable where T : ICloneable
     {
         private List<T> list = new List<T>();
         /// <summary>
@@ -95,6 +95,7 @@
         /// <returns></returns>
         public List<T> PopRange(int index, int count)
         {
+            
             T[] array = new T[count];
             Array.Copy(list.ToArray(), index, array, 0, count);
             list.RemoveRange(index, count);

@@ -22,6 +22,7 @@ namespace Larks.RichView
             Handle = userControl.Handle;
             BindUserControl = userControl;
             RichViewInfo.ViewGraphics= BindUserControl.CreateGraphics();
+            RichViewInfo.CreateBuffGraphics(BindUserControl.Width, BindUserControl.Height);
             IsInitialization = true;
             
         }
@@ -61,7 +62,7 @@ namespace Larks.RichView
                 }
             }
             RichViewInfo.AddRangeItem(items);
-            RichViewInfo.InvokOnDraw();
+            
         }
     }
 }

@@ -479,6 +479,7 @@ namespace Larks.RichView
                 case WM_SIZE:
                     width = LOWORD(m.LParam);
                     height = HIWORD(m.LParam);
+                    RichViewInfo.ChangePageSize(width, height);
                     if (RichViewInfo.ViewGraphics != null)
                         RichViewInfo.ViewGraphics = null;
                     RichViewInfo.ViewGraphics = BindUserControl.CreateGraphics();

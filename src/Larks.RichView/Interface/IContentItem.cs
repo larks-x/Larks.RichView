@@ -11,6 +11,10 @@
         /// </summary>
         int No { get; }
         /// <summary>
+        /// 行号
+        /// </summary>
+        int LineNo { get; set; }
+        /// <summary>
         /// 唯一键
         /// </summary>
         long UniqueKey { get; }
@@ -64,10 +68,28 @@
         /// <returns></returns>
         RectangleF DrawRectangle { get; }
         /// <summary>
+        /// 设置或获取Bottom
+        /// </summary>
+        float Bottom { get; set; }
+        /// <summary>
+        /// 有边界
+        /// </summary>
+        float Right { get; }
+        /// <summary>
+        /// 设置在行内的坐标
+        /// </summary>
+        /// <param name="left">左边界</param>
+        /// <param name="bottom">下边界</param>
+        void SetLocationInLine(float left, float bottom);
+        /// <summary>
         /// 测量元素并返回元素的绘制区域
         /// </summary>
         /// <returns></returns>
         RectangleF Measure();
+        /// <summary>
+        /// 计算位置
+        /// </summary>
+        void CalculationLocation();
         /// <summary>
         /// 指定点在元素的哪个区域
         /// </summary>
@@ -80,6 +102,10 @@
         /// 绘制元素
         /// </summary>
         void Draw();
-
+        /// <summary>
+        /// 在指定画布绘制元素
+        /// </summary>
+        /// <param name="graphics">画布</param>
+        void Draw(Graphics graphics);
     }
 }

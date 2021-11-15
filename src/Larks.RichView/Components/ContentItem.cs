@@ -16,17 +16,48 @@
                 if (_RichViewInfo != null)
                     return;
                 _RichViewInfo = value;
-                _RichViewInfo.OnDraw += (graphics) =>
+                if (!_RichViewInfo.UseLineModel)
                 {
-                    Draw();
-                };
+                    _RichViewInfo.OnDraw += (graphics) =>
+                    {
+                        Draw();
+                    };
+                }
             }
         }
+
+        private int _No = -1;
         /// <summary>
         /// 编号
         /// </summary>
         [JsonIgnore]
-        public int No => RichViewInfo == null ? -1 : RichViewInfo.ContentItems.IndexOf(this);
+        public int No
+        {
+            get {
+                if (RichViewInfo == null)
+                    return -1;
+                if (RichViewInfo == null && LineNo == -1)
+                    return -1;
+                if (LineNo > -1)
+                    return RichViewInfo.ContentLines[LineNo].Items.IndexOf(this);
+                else
+                    return RichViewInfo.ContentItems.IndexOf(this);
+            }
+        }
+        private int _LineNo = -1;
+        /// <summary>
+        /// 行号
+        /// </summary>
+        public int LineNo
+        {
+            get => _LineNo;
+            set {
+                if (_LineNo == value)
+                    return;
+                _LineNo = value;
+                CalculationLocation();
+            }
+        }
         /// <summary>
         /// 类型
         /// </summary>
@@ -81,13 +112,46 @@
         /// </summary>
         [JsonIgnore]
         public RectangleF DrawRectangle => new RectangleF(Location,DrawSize);
+        /// <summary>
+        /// 设置或获取Bottom
+        /// </summary>
+        public float Bottom {
+            get => DrawRectangle.Bottom;
+            set {
+                if (DrawRectangle.Bottom == value)
+                    return;
+                Location = new PointF(Location.X, value - DrawSize.Height);
+            }
+        }
+        /// <summary>
+        /// 有边界
+        /// </summary>
+        public float Right => DrawRectangle.Right;
 
+        /// <summary>
+        /// 设置在行内的坐标
+        /// </summary>
+        /// <param name="left">左边界</param>
+        /// <param name="bottom">下边界</param>
+        public void SetLocationInLine(float left, float bottom)
+        {
+            Location = new PointF(left, bottom - DrawSize.Height);
+        }
         /// <summary>
         /// 绘制
         /// </summary>
         public virtual void Draw()
         {
-            RichViewInfo.ViewGraphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle);
+            RichViewInfo.BuffGraphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle, StringFormat.GenericTypographic);
+        }
+
+        /// <summary>
+        /// 在指定画布内绘制
+        /// </summary>
+        /// <param name="graphics"></param>
+        public virtual void Draw(Graphics graphics)
+        {
+            graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle, StringFormat.GenericTypographic);
         }
 
         /// <summary>
@@ -99,7 +163,7 @@
             if (IsControlKey)
             {
                 //空格只占半个中文的宽度
-                Size = RichViewInfo.ViewGraphics.MeasureString("测", RichViewInfo.Styles[0].StyleFont, 800, StringFormat.GenericTypographic);
+                Size = RichViewInfo.BuffGraphics.MeasureString("测", RichViewInfo.Styles[0].StyleFont, 800, StringFormat.GenericTypographic);
                 Size = new SizeF( Size.Width / 2,Size.Height);
                 if (Key == ControlKey.Tab)
                     Size = new SizeF(Size.Width * RichViewInfo.Layout.TabToSpace, Size.Height); 
@@ -109,10 +173,75 @@
             else
             {
                 if (ItemType == ItemType.Text)
-                    Size = RichViewInfo.ViewGraphics.MeasureString(Text, RichViewInfo.Styles[StyleNo].StyleFont, 800, StringFormat.GenericTypographic);
+                    Size = RichViewInfo.BuffGraphics.MeasureString(Text, RichViewInfo.Styles[StyleNo].StyleFont, 800, StringFormat.GenericTypographic);
                 
             }
+            CalculationLocation();
             return DrawRectangle;
+        }
+
+        /// <summary>
+        /// 计算位置
+        /// </summary>
+        /// <returns></returns>
+        public void CalculationLocation()
+        {
+            var pItem = Previous();
+            if (!RichViewInfo.UseLineModel)
+            {
+                if (pItem == null)
+                    Location = new PointF(RichViewInfo.Layout.Padding.Left, RichViewInfo.Layout.Padding.Top);
+                else
+                {
+                    if (pItem.DrawRectangle.Right + DrawSize.Width <= RichViewInfo.Layout.PageSize.Width - RichViewInfo.Layout.Padding.Right)
+                        Location = new PointF(pItem.DrawRectangle.Right, pItem.Location.Y);
+                    else
+                        Location = new PointF(RichViewInfo.Layout.Padding.Left, pItem.DrawRectangle.Bottom + RichViewInfo.Layout.RowSpacing);
+                }
+            }
+            else
+            {
+                if (pItem == null)
+                    SetLocationInLine(0, RichViewInfo.ContentLines[LineNo].Bottom);
+                else
+                    SetLocationInLine(pItem.DrawRectangle.Right, RichViewInfo.ContentLines[LineNo].Bottom);
+            }  
+        }
+
+        /// <summary>
+        /// 前一个
+        /// </summary>
+        /// <returns></returns>
+        public IContentItem? Previous()
+        {
+            if (No <= 0)
+                return null;
+            if(LineNo==-1)
+                return RichViewInfo.ContentItems[No - 1];
+            else
+                return RichViewInfo.ContentLines[LineNo].Items[No - 1];
+        }
+        /// <summary>
+        /// 后一个
+        /// </summary>
+        /// <returns></returns>
+        public IContentItem? Next()
+        {
+
+            if (LineNo == -1)
+            {
+                if (No == RichViewInfo.ContentItems.Count - 1)
+                    return null;
+                else
+                    return RichViewInfo.ContentItems[No + 1];
+            }  
+            else
+            {
+                if (No == RichViewInfo.ContentLines[LineNo].Items.Count - 1)
+                    return null;
+                return RichViewInfo.ContentLines[LineNo].Items[No + 1];
+            }
+                
         }
 
         /// <summary>
