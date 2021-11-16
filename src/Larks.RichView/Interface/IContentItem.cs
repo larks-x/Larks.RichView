@@ -68,6 +68,10 @@
         /// <returns></returns>
         RectangleF DrawRectangle { get; }
         /// <summary>
+        /// 将行内绘制区域转换为View中的区域
+        /// </summary>
+        RectangleF DrawRectangleToViewRectangle { get; }
+        /// <summary>
         /// 设置或获取Bottom
         /// </summary>
         float Bottom { get; set; }

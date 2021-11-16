@@ -376,7 +376,11 @@ namespace Larks.RichView
                 handle = value;
                 if (IME != null)
                     IME = null;
-                IME = new ImeComponent(handle);
+                RichViewInfo.OnMoveCaretPos += (p, h) =>
+                {
+                    MoveCaretPos(p.X, p.Y,h);
+                };
+                IME = new ImeComponent(handle, RichViewInfo);
                 IME.InputText += (s) =>
                 {
                     ProcessingIMEInput(s);
@@ -457,7 +461,7 @@ namespace Larks.RichView
                     break;
                 case WM_SETFOCUS:
                     Debug.WriteLine("获得焦点");
-                    ShowCaret();
+                    ShowCaretToView();
                     
                     Debug.WriteLine("三所毫秒数"+GetCaretBlinkTime().ToString());
                     IsFocus = true;
@@ -696,22 +700,14 @@ namespace Larks.RichView
         }
 
         /// <summary>
-        /// 创建光标
-        /// </summary>
-        protected void CreateCaret()
-        {
-            //创建光标
-            CreateCaret(Handle, IntPtr.Zero, 0, 20);
-            SetCaretBlinkTime(600);
-        }
-
-        /// <summary>
         /// 显示光标
         /// </summary>
-        protected void ShowCaret()
+        protected void ShowCaretToView(int height = 20)
         {
             HideCaret();
-            CreateCaret();
+            //创建光标
+            CreateCaret(Handle, IntPtr.Zero, 0, height);
+            SetCaretBlinkTime(600);
             ShowCaret(Handle);
 
         }
@@ -721,7 +717,7 @@ namespace Larks.RichView
         /// </summary>
         protected void HideCaret()
         {
-            HideCaret(Handle);
+            //HideCaret(Handle);
             DestroyCaret();
         }
 
@@ -730,9 +726,9 @@ namespace Larks.RichView
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        protected void MoveCaretPos(int x,int y)
+        protected void MoveCaretPos(int x,int y,int height)
         {
-            ShowCaret();
+            ShowCaretToView(height);
             SetCaretPos(x, y);
         }
 

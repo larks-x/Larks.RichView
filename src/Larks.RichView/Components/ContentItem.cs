@@ -110,7 +110,21 @@
         /// 绘制区域
         /// </summary>
         [JsonIgnore]
-        public RectangleF DrawRectangle => new RectangleF(Location,DrawSize);
+        public RectangleF DrawRectangle => new RectangleF(Location, DrawSize);
+        /// <summary>
+        /// 将行内绘制区域转换为在View中的区域
+        /// </summary>
+        [JsonIgnore]
+        public RectangleF DrawRectangleToViewRectangle
+        {
+            get {
+                if (LineNo == -1)
+                    return DrawRectangle;
+                var lineLocation = RichViewInfo.ContentLines[LineNo].DrawRectangle.Location;
+                return new RectangleF(new PointF(lineLocation.X+ Location.X, lineLocation.Y+Location.Y), DrawSize);
+            }
+        }
+       
         /// <summary>
         /// 设置或获取Bottom
         /// </summary>
@@ -150,8 +164,9 @@
         /// <param name="graphics"></param>
         public virtual void Draw(Graphics graphics)
         {
-            graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle, StringFormat.GenericTypographic);
-            //graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, Location);
+            //graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle, StringFormat.GenericTypographic);
+            //graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle);
+            graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, Location);
         }
 
         /// <summary>
@@ -172,9 +187,8 @@
             }
             else
             {
-                if (ItemType == ItemType.Text)
-                    Size = RichViewInfo.BuffGraphics.MeasureString(Text, RichViewInfo.Styles[StyleNo].StyleFont, 800, StringFormat.GenericTypographic);
-                
+                Size = RichViewInfo.BuffGraphics.MeasureString(Text, RichViewInfo.Styles[StyleNo].StyleFont, 800, StringFormat.GenericTypographic);
+                Size=new SizeF(Size.Width+2, Size.Height+2);
             }
             CalculationLocation();
             return DrawRectangle;

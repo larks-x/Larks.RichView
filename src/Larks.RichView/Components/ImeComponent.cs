@@ -36,15 +36,30 @@
         //CursorPointInfo CursorInfo = CursorPointInfo.Empty;
         #endregion
 
+        RichViewInformation RichViewInfo;
+
         #region Construction
         /// <summary>
         /// 输入法组件
         /// </summary>
         /// <param name="control"></param>
-        public ImeComponent(IntPtr handle)
+        public ImeComponent(IntPtr handle, RichViewInformation richViewInfo)
         {
-            
+            RichViewInfo = richViewInfo;
             hIMC = ImmGetContext(handle);
+            RichViewInfo.OnMoveCaretPos += (p, h) =>
+            {
+                //输入法位置
+                COMPOSITIONFORM cf = new();
+                cf.dwStyle = CFS_POINT;
+                cf.ptCurrentPos.X = p.X;
+                cf.ptCurrentPos.Y = p.Y;
+                cf.rcArea.Bottom = 10;
+                cf.rcArea.Top = 10;
+                cf.rcArea.Left = 10;
+                cf.rcArea.Right = 10;
+                ImmSetCompositionWindow(hIMC, ref cf);
+            };
             //if (control is RichView)
             //{
             //    IsRichView = true;

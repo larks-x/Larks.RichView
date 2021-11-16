@@ -84,10 +84,32 @@ namespace Larks.RichView.ContentElements
         }
 
         /// <summary>
+        /// 光标移动事件
+        /// </summary>
+        public Action<Point, int> OnMoveCaretPos;
+        internal void InvokOnMoveCaretPos()
+        {
+            if (OnMoveCaretPos == null)
+                return;
+            var tmp = CaretDrawInfo();
+            OnMoveCaretPos.Invoke(tmp.Item1, tmp.Item2);
+        }
+
+        private int _CursorIndex = -1;
+        /// <summary>
         /// 光标所在的索引
         /// </summary>
         [JsonIgnore]
-        public int CursorIndex { get; internal set; } = -1;
+        public int CursorIndex {
+            get => _CursorIndex;
+            set {
+                if (_CursorIndex == value)
+                    return;
+                _CursorIndex = value;
+                InvokOnMoveCaretPos();
+            }
+        }
+
         /// <summary>
         /// 光标所在行
         /// </summary>
@@ -127,6 +149,7 @@ namespace Larks.RichView.ContentElements
                     item.Measure();
                     ContentLines[CursorLine].Measure();
                 }
+                CursorIndex = ContentItems.Count - 1;
                 InvokOnDraw();
             };
             ContentItems.ItemAddRange += (items) =>
@@ -146,6 +169,7 @@ namespace Larks.RichView.ContentElements
 
                     }
                 });
+                CursorIndex = ContentItems.Count - 1;
                 InvokOnDraw();
             };
             ContentItems.ItemInsert += (index,item) => {
@@ -191,6 +215,19 @@ namespace Larks.RichView.ContentElements
             };
             AddLine();
         }
+
+        /// <summary>
+        /// 返回当前光标绘制信息
+        /// </summary>
+        /// <returns>Item1:光标绘制坐标,Item2:光标高度</returns>
+        public (Point,int) CaretDrawInfo()
+        {
+            var curItem = ContentItems[CursorIndex];
+            var tmp = curItem.DrawRectangleToViewRectangle;
+            var point = new Point((int)tmp.Right,(int)tmp.Top);
+            return (point,(int)tmp.Height);
+        }
+
         /// <summary>
         /// 光标向下移动一行
         /// </summary>
