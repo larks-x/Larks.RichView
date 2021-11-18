@@ -510,6 +510,9 @@ namespace Larks.RichView
                     Debug.WriteLine($"{DateTime.Now}=>WM_LBUTTONDBLCLK");
 
                     break;
+                case WM_PAINT:
+                    RichViewInfo.InvokOnDraw();
+                    break;
             }
             if (IsInitialization)
             {
