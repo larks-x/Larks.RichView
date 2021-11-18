@@ -6,6 +6,15 @@
     public class ContentItem : ElementKey, IContentItem
     {
         private RichViewInformation _RichViewInfo = null;
+        private StringFormat MeasureFormat=StringFormat.GenericTypographic;
+
+        public ContentItem()
+        {
+            MeasureFormat.FormatFlags = System.Drawing.StringFormatFlags.FitBlackBox
+                | System.Drawing.StringFormatFlags.MeasureTrailingSpaces
+                | StringFormatFlags.NoClip;
+        }
+
         /// <summary>
         /// RichViewInfo引用
         /// </summary>
@@ -164,9 +173,9 @@
         /// <param name="graphics"></param>
         public virtual void Draw(Graphics graphics)
         {
-            //graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle, StringFormat.GenericTypographic);
+            graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle, MeasureFormat);
             //graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, DrawRectangle);
-            graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, Location);
+            //graphics.DrawString(Text, RichViewInfo.Styles[StyleNo].StyleFont, RichViewInfo.Styles[StyleNo].DrawBrush, Location);
         }
 
         /// <summary>
@@ -178,7 +187,7 @@
             if (IsControlKey)
             {
                 //空格只占半个中文的宽度
-                Size = RichViewInfo.BuffGraphics.MeasureString("测", RichViewInfo.Styles[0].StyleFont, 800, StringFormat.GenericTypographic);
+                Size = RichViewInfo.BuffGraphics.MeasureString("测", RichViewInfo.Styles[0].StyleFont, 800, MeasureFormat);
                 Size = new SizeF( Size.Width / 2,Size.Height);
                 if (Key == ControlKey.Tab)
                     Size = new SizeF(Size.Width * RichViewInfo.Layout.TabToSpace, Size.Height); 
@@ -187,8 +196,8 @@
             }
             else
             {
-                Size = RichViewInfo.BuffGraphics.MeasureString(Text, RichViewInfo.Styles[StyleNo].StyleFont, 800, StringFormat.GenericTypographic);
-                Size=new SizeF(Size.Width+2, Size.Height+2);
+                Size = RichViewInfo.BuffGraphics.MeasureString(Text, RichViewInfo.Styles[StyleNo].StyleFont, 800, MeasureFormat);
+                //Size=new SizeF(Size.Width+2, Size.Height+2);
             }
             CalculationLocation();
             return DrawRectangle;
