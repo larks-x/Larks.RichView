@@ -95,7 +95,7 @@ namespace Larks.RichView.ContentElements
                 return;
             var tmp = CaretDrawInfo();
             OnMoveCaretPos.Invoke(tmp.Item1, tmp.Item2);
-            InvokOnDraw();
+            //InvokOnDraw();
         }
 
         private int _CursorIndex = -1;

@@ -377,22 +377,25 @@ namespace Larks.RichView
                 handle = value;
                 if (IME != null)
                     IME = null;
-//#if NET35
-//                TaskNet35.Run(() =>
-//                {
-//                    do {
-//                        RichViewInfo.InvokOnDraw();
-//                        TaskNet35.Delay(100);
-//                    } while (!_OnDisposing);
-//                });
-//#else
-//                Task.Run(() => { 
-//                    do {
-//                        RichViewInfo.InvokOnDraw();
-//                        Task.Delay(100);
-//                    } while (!_OnDisposing);
-//                });
-//#endif
+#if NET35
+                TaskNet35.Run(() =>
+                {
+                    do
+                    {
+                        //RichViewInfo.InvokOnDraw();
+                        RichViewInfo.InvokOnMoveCaretPos();
+                        TaskNet35.Delay(4000);
+                    } while (!_OnDisposing);
+                });
+#else
+                Task.Run(() => { 
+                    do {
+                        //RichViewInfo.InvokOnDraw();
+                        RichViewInfo.InvokOnMoveCaretPos();
+                        TaskNet35.Delay(500);
+                    } while (!_OnDisposing);
+                });
+#endif
                 RichViewInfo.OnMoveCaretPos += (p, h) =>
                 {
                     MoveCaretPos(p.X, p.Y,h);
@@ -478,7 +481,7 @@ namespace Larks.RichView
                     break;
                 case WM_SETFOCUS:
                     Debug.WriteLine("获得焦点");
-                    ShowCaretToView();
+                    //ShowCaretToView();
                     
                     Debug.WriteLine("三所毫秒数"+GetCaretBlinkTime().ToString());
                     IsFocus = true;
@@ -486,7 +489,7 @@ namespace Larks.RichView
                     break;
                 case WM_KILLFOCUS:
                     Debug.WriteLine("失去焦点");
-                    HideCaret();
+                    //HideCaret();
                     
                     IsFocus = false;
                     break;
@@ -528,6 +531,7 @@ namespace Larks.RichView
 
                     break;
                 case WM_PAINT:
+                case WM_ERASEBKGND:
                     RichViewInfo.InvokOnDraw();
                     break;
             }
@@ -724,7 +728,7 @@ namespace Larks.RichView
         /// </summary>
         protected void ShowCaretToView(int height = 20)
         {
-            HideCaret();
+            //HideCaret();
             //创建光标
             CreateCaret(Handle, IntPtr.Zero, 0, height);
             SetCaretBlinkTime(600);
@@ -738,7 +742,7 @@ namespace Larks.RichView
         protected void HideCaret()
         {
             //HideCaret(Handle);
-            DestroyCaret();
+            //DestroyCaret();
         }
 
         /// <summary>
@@ -748,8 +752,12 @@ namespace Larks.RichView
         /// <param name="y"></param>
         protected void MoveCaretPos(int x,int y,int height)
         {
-            ShowCaretToView(height);
-            SetCaretPos(x, y);
+            ////创建光标
+            //CreateCaret(Handle, IntPtr.Zero, 0, height);
+            //SetCaretPos(x, y);
+            ////SetCaretBlinkTime(600);
+            //ShowCaret(Handle);
+            
         }
 
         /// <summary>
