@@ -52,6 +52,20 @@
                     return RichViewInfo.ContentItems.IndexOf(this);
             }
         }
+
+        /// <summary>
+        /// 行内编号
+        /// </summary>
+        [JsonIgnore]
+        public int NoInLine
+        {
+            get {
+                if (LineNo == -1)
+                    return -1;
+                return RichViewInfo.ContentLines[LineNo].Items.IndexOf(this);
+            }
+        }
+
         private int _LineNo = -1;
         /// <summary>
         /// 行号
@@ -210,6 +224,7 @@
         public void CalculationLocation()
         {
             var pItem = Previous();
+            var nItem = Next();
             if (!RichViewInfo.UseLineModel)
             {
                 if (pItem == null)
@@ -221,6 +236,8 @@
                     else
                         Location = new PointF(RichViewInfo.Layout.Padding.Left, pItem.DrawRectangle.Bottom + RichViewInfo.Layout.RowSpacing);
                 }
+                if (nItem != null)
+                    nItem.CalculationLocation();
             }
             else
             {
@@ -228,6 +245,8 @@
                     SetLocationInLine(0, RichViewInfo.ContentLines[LineNo].Height);
                 else
                     SetLocationInLine(pItem.DrawRectangle.Right, RichViewInfo.ContentLines[LineNo].Height);
+                if (nItem != null)
+                    nItem.CalculationLocation();
             }  
         }
 

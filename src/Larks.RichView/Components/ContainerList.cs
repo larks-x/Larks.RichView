@@ -10,19 +10,35 @@
         /// <summary>
         /// 添加数据
         /// </summary>
-        public Action<T> ItemAdd;
+        public Action<T> ItemAddBefor;
         /// <summary>
         /// 添加数据
         /// </summary>
-        public Action<IEnumerable<T>> ItemAddRange;
+        public Action<IEnumerable<T>> ItemAddRangeBefor;
+        /// <summary>
+        /// 添加数据
+        /// </summary>
+        public Action<T> ItemAddAfter;
+        /// <summary>
+        /// 添加数据
+        /// </summary>
+        public Action<IEnumerable<T>> ItemAddRangeAfter;
         /// <summary>
         /// 插入数据
         /// </summary>
-        public Action<int,T> ItemInsert;
+        public Action<int, T> ItemInsertBefor;
         /// <summary>
         /// 插入数据
         /// </summary>
-        public Action<int,IEnumerable<T>> ItemInsertRange;
+        public Action<int, IEnumerable<T>> ItemInsertRangeBefor;
+        /// <summary>
+        /// 插入数据
+        /// </summary>
+        public Action<int,T> ItemInsertAfter;
+        /// <summary>
+        /// 插入数据
+        /// </summary>
+        public Action<int,IEnumerable<T>> ItemInsertRangeAfter;
         /// <summary>
         /// 删除数据
         /// </summary>
@@ -41,8 +57,9 @@
         /// <param name="obj"></param>
         public void Add(T obj)
         {
+            ItemAddBefor?.Invoke(obj);
             list.Add(obj);
-            ItemAdd?.Invoke(obj);
+            ItemAddAfter?.Invoke(obj);
             ItemChange?.Invoke();
         }
         /// <summary>
@@ -51,8 +68,9 @@
         /// <param name="objs"></param>
         public void AddRange(IEnumerable<T> objs)
         {
+            ItemAddRangeBefor?.Invoke(objs);
             list.AddRange(objs);
-            ItemAddRange?.Invoke(objs);
+            ItemAddRangeAfter?.Invoke(objs);
             ItemChange?.Invoke();
         }
         /// <summary>
@@ -62,8 +80,9 @@
         /// <param name="obj"></param>
         public void Insert(int index, T obj)
         {
+            ItemInsertBefor?.Invoke(index, obj);
             list.Insert(index, obj);
-            ItemInsert?.Invoke(index,obj);
+            ItemInsertAfter?.Invoke(index,obj);
             ItemChange?.Invoke();
         }
         /// <summary>
@@ -73,8 +92,9 @@
         /// <param name="objs"></param>
         public void InsertRange(int index, IEnumerable<T> objs)
         {
+            ItemInsertRangeBefor?.Invoke(index, objs);
             list.InsertRange(index, objs);
-            ItemInsertRange?.Invoke(index,objs);
+            ItemInsertRangeAfter?.Invoke(index,objs);
             ItemChange?.Invoke();
         }
         /// <summary>

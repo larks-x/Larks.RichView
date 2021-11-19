@@ -62,8 +62,10 @@ namespace Larks.RichView
                         return;
                 }
             }
-            RichViewInfo.AddRangeItem(items);
-            
+            if(RichViewInfo.CursorIndex == RichViewInfo.ContentItems.Count-1)
+                RichViewInfo.AddRangeItem(items);
+            else
+                RichViewInfo.InsertRangeItem(RichViewInfo.CursorIndex+1,items);
         }
     }
 }

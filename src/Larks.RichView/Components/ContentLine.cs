@@ -111,13 +111,13 @@ namespace Larks.RichView.Components
         public ContentLine()
         {
             CreateBuffGraphics();
-            Items.ItemAdd += (item) =>
+            Items.ItemAddAfter += (item) =>
             {
                 item.LineNo = No;
                 item.CalculationLocation();
                 //Measure();
             };
-            Items.ItemAddRange += (items) =>
+            Items.ItemAddRangeAfter += (items) =>
             {
                 items.ToList().ForEach((item) =>
                 {
@@ -126,20 +126,21 @@ namespace Larks.RichView.Components
                 });
                 //Measure();
             };
-            Items.ItemInsert += (index,item) =>
+            Items.ItemInsertAfter += (index,item) =>
             {
                 item.LineNo = No;
                 item.CalculationLocation();
                 //Measure();
             };
-            Items.ItemInsertRange += (index,items) =>
+            Items.ItemInsertRangeAfter += (index,items) =>
             {
                 items.ToList().ForEach((item) =>
                 {
                     item.LineNo = No;
+                    item.Measure();
                     item.CalculationLocation();
                 });
-                //Measure();
+                Measure();
             };
         }
 

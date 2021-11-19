@@ -8,6 +8,7 @@ namespace Larks.RichView
 {
     public abstract class BaseHost:IDisposable
     {
+        private bool _OnDisposing = false;
         #region WinAPI
         /// <summary>
         /// 获取按键状态
@@ -376,6 +377,22 @@ namespace Larks.RichView
                 handle = value;
                 if (IME != null)
                     IME = null;
+//#if NET35
+//                TaskNet35.Run(() =>
+//                {
+//                    do {
+//                        RichViewInfo.InvokOnDraw();
+//                        TaskNet35.Delay(100);
+//                    } while (!_OnDisposing);
+//                });
+//#else
+//                Task.Run(() => { 
+//                    do {
+//                        RichViewInfo.InvokOnDraw();
+//                        Task.Delay(100);
+//                    } while (!_OnDisposing);
+//                });
+//#endif
                 RichViewInfo.OnMoveCaretPos += (p, h) =>
                 {
                     MoveCaretPos(p.X, p.Y,h);
@@ -574,7 +591,7 @@ namespace Larks.RichView
                     break;
                 case VK_LEFT:
                     Debug.WriteLine("按下[←]");
-
+                    RichViewInfo.CursorMovePrevious();
                     break;
                 case VK_UP:
                     Debug.WriteLine("按下[↑]");
@@ -582,7 +599,7 @@ namespace Larks.RichView
                     break;
                 case VK_RIGHT:
                     Debug.WriteLine("按下[→]");
-
+                    RichViewInfo.CursorMoveNext();
                     break;
                 case VK_DOWN:
                     Debug.WriteLine("按下[↓]");
@@ -740,6 +757,7 @@ namespace Larks.RichView
         /// </summary>
         public void Dispose()
         {
+            _OnDisposing = true;
             //销毁光标
             DestroyCaret();
         }

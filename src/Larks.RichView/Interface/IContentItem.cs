@@ -11,6 +11,10 @@
         /// </summary>
         int No { get; }
         /// <summary>
+        /// 元素行内编号
+        /// </summary>
+        int NoInLine { get; }
+        /// <summary>
         /// 行号
         /// </summary>
         int LineNo { get; set; }

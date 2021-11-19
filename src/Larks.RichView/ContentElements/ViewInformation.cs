@@ -71,14 +71,16 @@ namespace Larks.RichView.ContentElements
         {
             lock (CallDraw)
             {
+                if (_BuffGraphics == null || _ViewGraphics == null)
+                    return;
                 Debug.WriteLine($"开始绘制");
-                _BuffGraphics.Clear(Color.White);
+                _BuffGraphics?.Clear(Color.White);
                 OnDraw?.Invoke(_BuffGraphics);
                 Debug.WriteLine($"所有元素绘制完成");
                 Debug.WriteLine($"清屏");
                 //_ViewGraphics.Clear(Color.White);
                 Debug.WriteLine($"翻转");
-                _ViewGraphics.DrawImage(_BuffBitmap, 0, 0);
+                _ViewGraphics?.DrawImage(_BuffBitmap, 0, 0);
             }
             
         }
@@ -93,6 +95,7 @@ namespace Larks.RichView.ContentElements
                 return;
             var tmp = CaretDrawInfo();
             OnMoveCaretPos.Invoke(tmp.Item1, tmp.Item2);
+            InvokOnDraw();
         }
 
         private int _CursorIndex = -1;
@@ -137,7 +140,7 @@ namespace Larks.RichView.ContentElements
         {
            
             Styles.Add(StyleInfo.Default);
-            ContentItems.ItemAdd += (item) =>{
+            ContentItems.ItemAddAfter += (item) =>{
                 item.RichViewInfo = this;
                 if (!UseLineModel)
                     item.Measure();
@@ -152,7 +155,7 @@ namespace Larks.RichView.ContentElements
                 CursorIndex = ContentItems.Count - 1;
                 InvokOnDraw();
             };
-            ContentItems.ItemAddRange += (items) =>
+            ContentItems.ItemAddRangeAfter += (items) =>
             {
                 items.ToList().ForEach(item =>
                 {
@@ -172,21 +175,23 @@ namespace Larks.RichView.ContentElements
                 CursorIndex = ContentItems.Count - 1;
                 InvokOnDraw();
             };
-            ContentItems.ItemInsert += (index,item) => {
+            ContentItems.ItemInsertBefor += (index,item) => {
                 item.RichViewInfo = this;
                 if (!UseLineModel)
                     item.Measure();
                 else
                 {
-                    ContentLines[CursorLine].AddItem(item);
-                    item.LineNo = CursorLine;
+                    //这里要将index转换为行内的index才能正确
+                    ContentLines[CursorLine].Insert(index,item);
+                    CursorIndex = index +1;
+                    //item.LineNo = CursorLine;
+                    ////ContentLines[CursorLine].Measure();
+                    //item.Measure();
                     //ContentLines[CursorLine].Measure();
-                    item.Measure();
-                    ContentLines[CursorLine].Measure();
                 }
                 InvokOnDraw();
             };
-            ContentItems.ItemInsertRange += (index,items) =>
+            ContentItems.ItemInsertRangeBefor += (index,items) =>
             {
                 items.ToList().ForEach(item =>
                 {
@@ -195,16 +200,23 @@ namespace Larks.RichView.ContentElements
                         item.Measure();
                     else
                     {
-                        ContentLines[CursorLine].AddItem(item);
-                        item.LineNo = CursorLine;
+                        //ContentLines[CursorLine].Insert(index,item);
+                        //item.LineNo = CursorLine;
+                        //item.Measure();
                         //ContentLines[CursorLine].Measure();
-                        item.Measure();
-                        ContentLines[CursorLine].Measure();
+                        //index++;
                     }
                 });
+                var tindex = ContentItems[index].NoInLine;
+                //这里要将index转换为行内的index才能正确
+                ContentLines[CursorLine].Insert(tindex, items);
+            };
+            ContentItems.ItemInsertRangeAfter += (index, items) =>
+            {
+                CursorIndex = index + items.Count() - 1;
                 InvokOnDraw();
             };
-            ContentLines.ItemAdd += (line) =>
+            ContentLines.ItemAddAfter += (line) =>
             {
                 if (UseLineModel)
                 {
@@ -222,9 +234,14 @@ namespace Larks.RichView.ContentElements
         /// <returns>Item1:光标绘制坐标,Item2:光标高度</returns>
         public (Point,int) CaretDrawInfo()
         {
+            if (CursorIndex < 0)
+            {
+                return (new Point(0,0),24);
+            }
             var curItem = ContentItems[CursorIndex];
             var tmp = curItem.DrawRectangleToViewRectangle;
             var point = new Point((int)tmp.Right,(int)tmp.Top);
+            Debug.WriteLine($"[{CursorIndex}]:[{ContentItems[CursorIndex].Text}]=>{point.ToString()}");
             return (point,(int)tmp.Height);
         }
 
@@ -243,6 +260,23 @@ namespace Larks.RichView.ContentElements
         {
             if (CursorLine > 0)
                 CursorLine--;
+        }
+
+        /// <summary>
+        /// 光标向后移动一个元素
+        /// </summary>
+        public void CursorMoveNext()
+        {
+            if (CursorIndex < ContentItems.Count - 1)
+                CursorIndex++;
+        }
+        /// <summary>
+        /// 光标向前移动一个元素
+        /// </summary>
+        public void CursorMovePrevious()
+        {
+            if (CursorIndex > -1)
+                CursorIndex--;
         }
 
         /// <summary>
